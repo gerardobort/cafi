@@ -3,21 +3,37 @@
  * @author gerardobort <gerardobort@gmail.com>
  */
 
-var Cafi;
+var Cafi = {
 
-Cafi = function () {};
-Cafi.prototype = { };
+    // Consts
+    PI: Math.PI,
+    E: Math.E,
+    GRAVITY: 9.81,
+    time: 0,
+    dT: 1000/30,
+    timeBreakPoint: 120*1000,
+    timeScale: 0.005,
 
-/**
- * Cafi Model : Constants
- */
-Cafi.PI = Math.PI;
-Cafi.E = Math.E;
-Cafi.GRAVITY = 9.81;
-Cafi.time = 0;
-Cafi.dT = 1000/10;
-Cafi.pixelScale = 13000*1000;
+    models: [],
+    run: function () {
+        var Cafi__models = this.models;
+        var timer = setInterval(function () {
+            var i, iModel;
+            for (i = (Cafi__models || []).length-1; i > -1; --i) {
+                iModel = Cafi__models[i];
+                iModel.process();
+                iModel.render();
+            }
+            
 
+            if ((Cafi.time += Cafi.dT) > Cafi.timeBreakPoint) {
+                clearInterval(timer);
+                console.log('finished');
+            }
+
+        }, Cafi.dT);
+    }
+};
 
 /**
  * Cafi Model
@@ -27,12 +43,21 @@ Cafi.pixelScale = 13000*1000;
 Cafi.Model = function (options) {
     // Endo Vars: Status
     this.mass = options.mass || 1;
+    this.forces = options.forces || [];
     this.potentialEnergy = options.potentialEnergy || 0;
     this.cineticEnergy = options.cineticEnergy || 0;
     this.normal = options.normal || [0, 0, 1];
     this.velocity = options.velocity || [0, 0, 0];
     this.position = options.position || [0, 0, 0];
-    //this.acceleration = options.acceleration || [0, 0, 0];
+
+    // Endo Vars
+    this.acceleration = options.acceleration || [0, 0, 0];
+
+    this.debugDomElement = options.debugDomElement || null;
+    this.debugDomElement.style.webkitTransition = 'all ' + Cafi.dT + 'ms linear';
+
+    // register model
+    Cafi.models.push(this);
 };
 
 
@@ -49,46 +74,58 @@ Cafi.Model.prototype.getDistance = function (model) {
 /**
  * Cafi Model : Physics
  */
-Cafi.Model.prototype.getResultantForce = function (externalModels) {
-    var resultantForce = [0, 0, 0], i;
+Cafi.Model.prototype.getResultantForce = function () {
+    var resultantForce = [0, 0, 0],
+        forces = this.forces,
+        i, f;
 
-    // TODO summarize all external forces
-    for (i = (externalModels || []).length; i > 0; --i) {
+    for (i = (forces || []).length-1; i > -1; --i) {
+        f = forces[i];
+        resultantForce[0] += f[0];
+        resultantForce[1] += f[1];
+        resultantForce[2] += f[2];
     }
 
     // gravity
-    resultantForce[2] -= this.mass*Cafi.GRAVITY;
+    resultantForce[2] += -this.mass*Cafi.GRAVITY;
     return resultantForce;
 };
 
-Cafi.Model.prototype.getVelocity = function () {
-    var v = this.velocity,
-        f = this.getResultantForce(),
-        m = this.mass,
-        t = Cafi.dT;
-    return [v[0] + f[0]/m*t,v[1] + f[1]/m*t, v[2] + f[2]/m*t];
-};
-
-/*
-Cafi.Model.prototype.getAcceleration = function () {
-    var v = this.velocity,
-        f = this.getResultantForce(),
-        k1 = (Cafi.time*Cafi.time)/(2*this.mass);
-    // TODO review
-    return [v[0] + f[0]*k1, v[1] + f[1]*k1, v[2] + f[2]*k1];
-};
-*/
-
 Cafi.Model.prototype.process = function () {
-    var p = this.position,
-        v = this.velocity = this.getVelocity(),
-        f = this.getResultantForce(),
-        t = Cafi.time,
-        ka = (t*t)/(2*this.mass);
-    this.position = [p[0] + v[0]*t + f[0]*ka, p[1] + v[1]*t + f[1]*ka, p[2] + v[2]*t + f[2]*ka];
+    var dt = Cafi.dT * Cafi.timeScale,
+        p = this.position,
+        v = this.velocity,
+        m = this.mass,
+        f,
+        a;
+
+    v = this.velocity;
+    f = this.getResultantForce();
+    a = [f[0]/m, f[1]/m, f[2]/m];
+
+    this.forces = [];
+    this.velocity = [v[0] + a[0]*dt, v[1] + a[1]*dt, v[2] + a[2]*dt];
+    this.position = [p[0] + v[0]*dt, p[1] + v[1]*dt, p[2] + v[2]*dt];
+
+
+    // collisions
+    if (this.position[2] <= -390) {
+        this.forces.push([0, 0, -98.9]);
+        var ec = 0.5*m*v[2]*v[2],
+            vAbs1 = Math.sqrt(v[0]*v[0] + v[1]*v[1] + v[2]*v[2]),
+            vAbs2 = Math.sqrt(2*ec/m),
+            vVers = [v[0]/vAbs1, v[1]/vAbs1, v[2]/vAbs1];
+        if (vAbs1 < 0.1)  {
+            this.velocity = [0, 0, 0];
+        } else {
+            this.velocity = [vVers[0]*vAbs2, vVers[1]*vAbs2, -vVers[2]*vAbs1];
+        }
+    }
 };
 
-Cafi.Model.prototype.render = function (domElement) {
-    var s = Cafi.pixelScale;
-    domElement.style.webkitTransform = 'translate(' + (this.position[1]/s) + 'px, ' + (-this.position[2]/s) +'px)';
+Cafi.Model.prototype.render = function () {
+    this.debugDomElement.style
+        .webkitTransform = 'translate(' + (this.position[1]) + 'px, ' + (-this.position[2]) +'px)';
 };
+
+
