@@ -1,4 +1,4 @@
-.universe {
+#universe {
     position: absolute;
     overflow: hidden;
     background: #000;
@@ -6,17 +6,19 @@
     right: 0;
     bottom: 0;
     left: 0;
+    -webkit-perspective: 800px;
 }
 
-.universe #reference-system {
+#universe #reference-system {
     position: absolute;
-    background: #000;
+    background: rgba(255,255,255,0.1);
     top: 0;
     right: 0;
     bottom: 0;
     left: 0;
     -webkit-transform: scaleY(-1);
     border: 1px solid yellow;
+    -webkit-transform-style: preserve-3d;
 }
 
 .model {
@@ -25,6 +27,7 @@
     height: 6px;
     border-radius: 100%;
     background: gray;
+    opacity: 1;
 }
 
 #model-0 {
@@ -33,22 +36,6 @@
 
 #model-1 {
     background: green;
-}
-
-#floor {
-    position: absolute;
-    top: 100px;
-    width: 100%;
-    height: 1px;
-    background: red;
-}
-
-#roof {
-    position: absolute;
-    bottom: 100px;
-    width: 100%;
-    height: 1px;
-    background: red;
 }
 
 .vector {

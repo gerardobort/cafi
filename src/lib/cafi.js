@@ -8,7 +8,7 @@ var Cafi = {
     E: Math.E,
     GRAVITY: 9.81,
     time: 0,
-    dT: 1000/30,
+    dT: 1000/20,
     enableTransitions: true,
     collisionThreshold: 7,
     timeBreakPoint: 120*1000,
@@ -19,22 +19,26 @@ var Cafi = {
     tiemr: null,
     initialize: function () {
         var i, iModel, Cafi__models = Cafi.models;
+        this.initializeRender();
         for (i = (Cafi__models || []).length-1; i > -1; --i) {
             iModel = Cafi__models[i];
-            iModel.initializeRender();
-            iModel.render();
+            // ..
         }
+    },
+    initializeRender: function () {
+        this.containerDomElement.style.webkitTransformOrigin = '0 0 0';
+        this.containerDomElement.style.webkitTransform = 'rotate3d(0,-1,1, 180deg) scaleX(-1) translate3d(0, 0, -500px)';
     },
     mainLoop: function () {
         var i, j, iModel, jModel, Cafi__models = Cafi.models, Cafi__collisionMatrix = Cafi.colisionMatrix;
-        for (i = (Cafi__models || []).length-1; i > -1; --i) {
+        for (i = (Cafi__models || []).length-1; i > -1 && Cafi__models[i]; --i) {
             iModel = Cafi__models[i];
             iModel.process();
         }
 
-        for (i = (Cafi__models || []).length-1; i > -1; --i) {
+        for (i = (Cafi__models || []).length-1; i > -1 && Cafi__models[i]; --i) {
             iModel = Cafi__models[i];
-            for (j = (Cafi__models || []).length-1; i < j; --j) {
+            for (j = (Cafi__models || []).length-1; i < j && Cafi__models[j]; --j) {
                 jModel = Cafi__models[j];
                 if (iModel.position.v3_getDistance(jModel.position) < Cafi.collisionThreshold) {
                     Cafi.processModelsCollision(i, j);
@@ -42,7 +46,7 @@ var Cafi = {
             }
         }
 
-        for (i = (Cafi__models || []).length-1; i > -1; --i) {
+        for (i = (Cafi__models || []).length-1; i > -1 && Cafi__models[i]; --i) {
             iModel = Cafi__models[i];
             iModel.render();
         }
@@ -149,6 +153,10 @@ Array.prototype.v3_getAngleX = function () {
     var a = this;
     return Math.atan2(a[2], a[1])/Cafi.PI*180;
 };
+Array.prototype.v3_getAngleY = function () {
+    var a = this;
+    return Math.atan2(a[2], a[0])/Cafi.PI*180;
+};
 Array.prototype.v3_dotProduct = function (value) {
     var a = this;
     if (typeof value === 'number') {
@@ -189,6 +197,9 @@ Cafi.Model = function (options) {
 
     // register model
     Cafi.models.push(this);
+
+    this.initializeRender();
+    this.render();
 };
 
 
@@ -231,12 +242,17 @@ Cafi.Model.prototype.process = function (skipCollisions) {
     this.potentialEnergy = pe = m*Cafi.GRAVITY*p1[2];
     this.cineticEnergy = ce = 0.5*m*v[2]*v[2];
 
-    // collisions
+
+    if (!v[0] && !v[1] && !v[2]) {
+        //this.die();
+    }
+
+    // main container edge collisions
     if (!skipCollisions) {
         if (p1[2] < 0) {
             this.processCollision([0, 0, 1]);
         }
-        if (p1[2] > window.innerHeight) {
+        if (p1[2] > 2000) {
             this.processCollision([0, 0, -1]);
         }
         if (p1[1] < 0) {
@@ -245,14 +261,24 @@ Cafi.Model.prototype.process = function (skipCollisions) {
         if (p1[1] > window.innerWidth) {
             this.processCollision([0, -1, 0]);
         }
+        if (p1[0] < 0) {
+            this.processCollision([1, 0, 0]);
+        }
+        if (p1[0] > window.innerHeight) {
+            this.processCollision([-1, 0, 0]);
+        }
     }
 };
 
 Cafi.Model.prototype.processCollision = function (normal) {
     var v1 = this.velocity,
         v2 = this.velocity.v3_reflect(normal);
-    this.velocity = v1.v3_cos(v2) > 0.97 ? [0, 0, 0] : v2;
+    this.velocity = v1.v3_cos(v2) > 0.987 ? [0, 0, 0] : v2;
     this.process(true); // re-calculate positioning
+}
+
+Cafi.Model.prototype.die = function () {
+    delete Cafi.models[this.id];
 }
 
 Cafi.Model.prototype.initializeRender = function () {
@@ -266,38 +292,43 @@ Cafi.Model.prototype.initializeRender = function () {
     debugDomElement.className = 'model';
     debugDomElement_direction.id = 'model-' + this.id + 'vector-direction';
     debugDomElement_direction.className = 'vector direction';
-    debugDomElement_velocity.id = 'model-' + this.id + 'vector-velocity';
-    debugDomElement_velocity.className = 'vector velocity';
+    //debugDomElement_velocity.id = 'model-' + this.id + 'vector-velocity';
+    //debugDomElement_velocity.className = 'vector velocity';
 
     if (Cafi.enableTransitions) {
         debugDomElement.style.webkitTransition = 'all ' + Cafi.dT + 'ms linear';
         debugDomElement_direction.style.webkitTransition = 'all ' + Cafi.dT + 'ms linear';
-        debugDomElement_velocity.style.webkitTransition = 'all ' + Cafi.dT + 'ms linear';
+        //debugDomElement_velocity.style.webkitTransition = 'all ' + Cafi.dT + 'ms linear';
     }
 
     container.appendChild(debugDomElement);
-    container.appendChild(debugDomElement_velocity);
     container.appendChild(debugDomElement_direction);
+    //container.appendChild(debugDomElement_velocity);
 
     this.debugDomElement = debugDomElement;
     this.debugDomElement_direction = debugDomElement_direction;
-    this.debugDomElement_velocity = debugDomElement_velocity;
+    //this.debugDomElement_velocity = debugDomElement_velocity;
 };
 
 Cafi.Model.prototype.render = function () {
-    this.debugDomElement.style
-        .webkitTransform = 'translate(' + (this.position[1]) + 'px, ' + (this.position[2]) +'px)'
-        + ' scale(' + this.mass + ')';
+    var translate3d = 'translate3d(' + this.position[1] + 'px,' + this.position[0] + 'px,' + this.position[2] + 'px)',
+        translate2d = 'translate(' + this.position[1] + 'px,' + this.position[2] + 'px)';
 
-    this.debugDomElement_direction.style.webkitTransformOrigin = '0 0';
-    this.debugDomElement_direction.style
-        .webkitTransform = 'translate(' + (this.position[1]) + 'px, ' + (this.position[2]) +'px)'
-        + ' rotate(' + (this.direction.v3_getAngleX()) + 'deg)';
+    this.debugDomElement.style.webkitTransform = translate3d + ' rotateX(90deg)';
+    //this.debugDomElement.style.webkitTransform = translate3d + ' scale3d(' + this.mass + ',' + this.mass + ',' + this.mass +') rotateX(90deg)';
 
-    this.debugDomElement_velocity.style.webkitTransformOrigin = '0 0';
-    this.debugDomElement_velocity.style
-        .webkitTransform = 'translate(' + (this.position[1]) + 'px, ' + (this.position[2]) +'px)'
-        + ' rotate(' + (this.velocity.v3_getAngleX()) + 'deg)';
+    this.debugDomElement_direction.style.webkitTransformOrigin = '0 0 0';
+    this.debugDomElement_direction.style.webkitTransform = translate3d 
+        + ' rotate3d(0, -1, 1, ' + (this.direction.v3_getAngleX()) + 'deg)'
+        + ' rotate3d(1, 0, 0, ' + (this.direction.v3_getAngleY()) + 'deg)';
+
+/*
+    this.debugDomElement_velocity.style.webkitTransformOrigin = '0 0 0';
+    this.debugDomElement_velocity.style.webkitTransform = translate3d
+        + ' rotate3d(0, -1, 1, ' + (this.velocity.v3_getAngleX()) + 'deg)'
+        + ' rotate3d(1, 0, 0, ' + (this.velocity.v3_getAngleY()) + 'deg)';
+*/
+
 };
 
 // TODO
