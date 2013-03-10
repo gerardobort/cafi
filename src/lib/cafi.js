@@ -160,6 +160,14 @@ Array.prototype.v3_dotProduct = function (value) {
         return [a[0]*value[0], a[1]*value[1], a[2]*value[2]];
     } 
 };
+Array.prototype.v3_product = function (value) {
+    var a = this;
+    return a[0]*value[0] + a[1]*value[1] + a[2]*value[2];
+};
+Array.prototype.v3_cos = function (b) {
+    var a = this;
+    return a.v3_product(b)/(a.v3_getModule()*b.v3_getModule());
+};
 
 
 /**
@@ -208,8 +216,6 @@ Cafi.Model.prototype.getResultantForce = function () {
         resultantForce[2] += f[2];
     }
 
-    // gravity
-    resultantForce[2] += -this.mass*Cafi.GRAVITY;
     return resultantForce;
 };
 
@@ -222,10 +228,14 @@ Cafi.Model.prototype.process = function (skipCollisions) {
         f,
         a,
         ce,
-        pe;
+        pe = m*Cafi.GRAVITY*p[2];
 
     f = this.getResultantForce();
     a = [f[0]/m, f[1]/m, f[2]/m];
+
+    if (p[2] > 100) { // TODO floor limit --> potential energy
+        a[2] -= Cafi.GRAVITY;
+    }
 
     this.forces = [];
     this.velocity = v = [v[0] + a[0]*dt, v[1] + a[1]*dt, v[2] + a[2]*dt];
@@ -253,7 +263,9 @@ Cafi.Model.prototype.process = function (skipCollisions) {
 };
 
 Cafi.Model.prototype.processCollision = function (normal) {
-    this.velocity = this.velocity.v3_reflect(normal);
+    var v1 = this.velocity,
+        v2 = this.velocity.v3_reflect(normal);
+    this.velocity = v1.v3_cos(v2) > 0.9 ? [0, 0, 0] : v2;
     this.process(true);
 }
 
