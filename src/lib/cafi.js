@@ -15,6 +15,7 @@ var Cafi = {
     collisionThreshold: 7,
     timeBreakPoint: 120*1000,
     timeScale: 0.01,
+    containerDomElement: document.getElementById('reference-system'),
 
     models: [],
     colisionMatrix: [], // upper triangular matrix
@@ -23,6 +24,7 @@ var Cafi = {
         var i, iModel, Cafi__models = Cafi.models;
         for (i = (Cafi__models || []).length-1; i > -1; --i) {
             iModel = Cafi__models[i];
+            iModel.initializeRender();
             iModel.render();
         }
     },
@@ -37,9 +39,7 @@ var Cafi = {
             iModel = Cafi__models[i];
             for (j = (Cafi__models || []).length-1; i < j; --j) {
                 jModel = Cafi__models[j];
-                //console.log(iModel.position.v3_getDistance(jModel.position));
                 if (iModel.position.v3_getDistance(jModel.position) < Cafi.collisionThreshold) {
-                    //console.log('collision!', iModel.position.v3_getDistance(jModel.position));
                     Cafi.processModelsCollision(i, j);
                 }
             }
@@ -189,12 +189,7 @@ Cafi.Model = function (options) {
     // Endo Vars
     this.acceleration = options.acceleration || [0, 0, 0];
 
-    this.debugDomElement = options.debugDomElement || null;
-    this.debugDomElement_v = options.debugDomElement_v || null;
-    if (Cafi.enableTransitions) {
-        this.debugDomElement.style.webkitTransition = 'all ' + Cafi.dT + 'ms linear';
-        this.debugDomElement_v.style.webkitTransition = 'all ' + Cafi.dT + 'ms linear';
-    }
+    this.id = Cafi.models.length;
 
     // register model
     Cafi.models.push(this);
@@ -233,7 +228,7 @@ Cafi.Model.prototype.process = function (skipCollisions) {
     f = this.getResultantForce();
     a = [f[0]/m, f[1]/m, f[2]/m];
 
-    if (p[2] > 100) { // TODO floor limit --> potential energy
+    if ((p[2] + (v[2] + a[2]*dt)*dt)  > 0) { // TODO floor limit --> potential energy
         a[2] -= Cafi.GRAVITY;
     }
 
@@ -247,10 +242,10 @@ Cafi.Model.prototype.process = function (skipCollisions) {
 
     // collisions
     if (!skipCollisions) {
-        if (p1[2] < 100) {
+        if (p1[2] < 0) {
             this.processCollision([0, 0, 1]);
         }
-        if (p1[2] > 500) {
+        if (p1[2] > window.innerHeight) {
             this.processCollision([0, 0, -1]);
         }
         if (p1[1] < 0) {
@@ -265,19 +260,53 @@ Cafi.Model.prototype.process = function (skipCollisions) {
 Cafi.Model.prototype.processCollision = function (normal) {
     var v1 = this.velocity,
         v2 = this.velocity.v3_reflect(normal);
-    this.velocity = v1.v3_cos(v2) > 0.9 ? [0, 0, 0] : v2;
-    this.process(true);
+    this.velocity = v1.v3_cos(v2) > 0.97 ? [0, 0, 0] : v2;
+    this.process(true); // re-calculate positioning
 }
+
+Cafi.Model.prototype.initializeRender = function () {
+    var container = Cafi.containerDomElement,   
+        styleSheet = document.styleSheets[0],
+        debugDomElement = document.createElement('div'),
+        debugDomElement_direction = document.createElement('div'),
+        debugDomElement_velocity = document.createElement('div');
+
+    debugDomElement.id = 'model-' + this.id;
+    debugDomElement.className = 'model';
+    debugDomElement_direction.id = 'model-' + this.id + 'vector-direction';
+    debugDomElement_direction.className = 'vector direction';
+    debugDomElement_velocity.id = 'model-' + this.id + 'vector-velocity';
+    debugDomElement_velocity.className = 'vector velocity';
+
+    if (Cafi.enableTransitions) {
+        debugDomElement.style.webkitTransition = 'all ' + Cafi.dT + 'ms linear';
+        debugDomElement_direction.style.webkitTransition = 'all ' + Cafi.dT + 'ms linear';
+        debugDomElement_velocity.style.webkitTransition = 'all ' + Cafi.dT + 'ms linear';
+    }
+
+    container.appendChild(debugDomElement);
+    container.appendChild(debugDomElement_velocity);
+    container.appendChild(debugDomElement_direction);
+
+    this.debugDomElement = debugDomElement;
+    this.debugDomElement_direction = debugDomElement_direction;
+    this.debugDomElement_velocity = debugDomElement_velocity;
+};
 
 Cafi.Model.prototype.render = function () {
     this.debugDomElement.style
         .webkitTransform = 'translate(' + (this.position[1]) + 'px, ' + (this.position[2]) +'px)'
         + ' scale(' + this.mass + ')';
 
-    this.debugDomElement_v.style.webkitTransformOrigin = '0 0';
-    this.debugDomElement_v.style
+    this.debugDomElement_direction.style.webkitTransformOrigin = '0 0';
+    this.debugDomElement_direction.style
         .webkitTransform = 'translate(' + (this.position[1]) + 'px, ' + (this.position[2]) +'px)'
         + ' rotate(' + (this.direction.v3_getAngleX()) + 'deg)';
+
+    this.debugDomElement_velocity.style.webkitTransformOrigin = '0 0';
+    this.debugDomElement_velocity.style
+        .webkitTransform = 'translate(' + (this.position[1]) + 'px, ' + (this.position[2]) +'px)'
+        + ' rotate(' + (this.velocity.v3_getAngleX()) + 'deg)';
 };
 
 

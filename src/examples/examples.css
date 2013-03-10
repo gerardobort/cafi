@@ -8,7 +8,7 @@
     left: 0;
 }
 
-.universe .reference-system {
+.universe #reference-system {
     position: absolute;
     background: #000;
     top: 0;
@@ -19,19 +19,19 @@
     border: 1px solid yellow;
 }
 
-#ball1,
-#ball2 {
+.model {
     position: absolute;
     width: 6px;
     height: 6px;
     border-radius: 100%;
+    background: gray;
 }
 
-#ball1 {
+#model-0 {
     background: red;
 }
 
-#ball2 {
+#model-1 {
     background: green;
 }
 
@@ -51,8 +51,7 @@
     background: red;
 }
 
-#ball1_v,
-#ball2_v {
+.vector {
     position: absolute;
     width: 30px;
     height: 1px;
@@ -62,10 +61,9 @@
     opacity: 0.5;
 }
 
-#ball1_v {
-    !background: red;
+.vector.direction {
+    background: yellow;
 }
-
-#ball2_v {
-    !background: green;
+.vector.velocity {
+    background: pink;
 }
