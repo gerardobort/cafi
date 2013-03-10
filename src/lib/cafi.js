@@ -4,8 +4,6 @@
  */
 
 var Cafi = {
-
-    // Consts
     PI: Math.PI,
     E: Math.E,
     GRAVITY: 9.81,
@@ -16,7 +14,6 @@ var Cafi = {
     timeBreakPoint: 120*1000,
     timeScale: 0.01,
     containerDomElement: document.getElementById('reference-system'),
-
     models: [],
     colisionMatrix: [], // upper triangular matrix
     tiemr: null,
@@ -188,7 +185,6 @@ Cafi.Model = function (options) {
 
     // Endo Vars
     this.acceleration = options.acceleration || [0, 0, 0];
-
     this.id = Cafi.models.length;
 
     // register model
@@ -210,7 +206,6 @@ Cafi.Model.prototype.getResultantForce = function () {
         resultantForce[1] += f[1];
         resultantForce[2] += f[2];
     }
-
     return resultantForce;
 };
 
@@ -220,13 +215,10 @@ Cafi.Model.prototype.process = function (skipCollisions) {
         p1,
         v = this.velocity,
         m = this.mass,
-        f,
-        a,
+        f = this.getResultantForce(),
+        a = [f[0]/m, f[1]/m, f[2]/m],
         ce,
         pe = m*Cafi.GRAVITY*p[2];
-
-    f = this.getResultantForce();
-    a = [f[0]/m, f[1]/m, f[2]/m];
 
     if ((p[2] + (v[2] + a[2]*dt)*dt)  > 0) { // TODO floor limit --> potential energy
         a[2] -= Cafi.GRAVITY;
@@ -238,7 +230,6 @@ Cafi.Model.prototype.process = function (skipCollisions) {
     this.direction = p1.v3_substract(p).v3_getVersor();
     this.potentialEnergy = pe = m*Cafi.GRAVITY*p1[2];
     this.cineticEnergy = ce = 0.5*m*v[2]*v[2];
-
 
     // collisions
     if (!skipCollisions) {
@@ -309,4 +300,12 @@ Cafi.Model.prototype.render = function () {
         + ' rotate(' + (this.velocity.v3_getAngleX()) + 'deg)';
 };
 
-
+// TODO
+Cafi.Bounding = {
+    Sphere: {
+    },
+    Box: {
+    }, 
+    ConvexHull: {
+    }, 
+};
