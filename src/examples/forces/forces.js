@@ -24,4 +24,10 @@ document.onmousedown = function (e) {
     });
 }
 
+
+document.onmousemove = function (e) {
+    Cafi.containerDomElement.style.webkitTransform = 'rotate3d(0, -1, 1, 180deg) scaleX(-1) translate3d(0px, 0px, -100px) rotate3d(0,0,1,' + (360/window.innerWidth)*e.clientX + 'deg) rotate3d(0,1,0,' + -(e.clientY-180)*0.02 + 'deg)' ;
+}
+
+
 Cafi.run();

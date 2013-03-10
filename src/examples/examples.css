@@ -17,7 +17,8 @@
     bottom: 0;
     left: 0;
     -webkit-transform: scaleY(-1);
-    border: 1px solid yellow;
+    border: 2px solid yellow;
+    border-bottom: 2px solid blue;
     -webkit-transform-style: preserve-3d;
 }
 

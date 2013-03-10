@@ -26,8 +26,8 @@ var Cafi = {
         }
     },
     initializeRender: function () {
-        this.containerDomElement.style.webkitTransformOrigin = '0 0 0';
-        this.containerDomElement.style.webkitTransform = 'rotate3d(0,-1,1, 180deg) scaleX(-1) translate3d(0, 0, -500px)';
+        this.containerDomElement.style.webkitTransformOrigin = '50% 50% 0';
+        this.containerDomElement.style.webkitTransform = 'rotate3d(0, -1, 1, 180deg) scaleX(-1) translate3d(0px, 0px, -100px) rotate3d(0, 0, 1, 0deg)';
     },
     mainLoop: function () {
         var i, j, iModel, jModel, Cafi__models = Cafi.models, Cafi__collisionMatrix = Cafi.colisionMatrix;
@@ -320,7 +320,7 @@ Cafi.Model.prototype.render = function () {
     this.debugDomElement_direction.style.webkitTransformOrigin = '0 0 0';
     this.debugDomElement_direction.style.webkitTransform = translate3d 
         + ' rotate3d(0, -1, 1, ' + (this.direction.v3_getAngleX()) + 'deg)'
-        + ' rotate3d(1, 0, 0, ' + (this.direction.v3_getAngleY()) + 'deg)';
+        + ' rotate3d(0, 0, 1, ' + (this.direction.v3_getAngleY()) + 'deg)';
 
 /*
     this.debugDomElement_velocity.style.webkitTransformOrigin = '0 0 0';
