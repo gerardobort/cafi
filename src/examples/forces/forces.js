@@ -1,16 +1,17 @@
 var ball1 = new Cafi.Model({
-    mass: 5, 
+    mass: 2, 
     position: [0, 0, 400],
-    velocity: [0, 2, 0],
-    debugDomElement: document.getElementById('ball1')
+    velocity: [0, 20, 0],
+    debugDomElement: document.getElementById('ball1'),
+    debugDomElement_v: document.getElementById('ball1_v')
 });
 
-/*
 var ball2 = new Cafi.Model({
-    mass: 10,
-    position: [0, 600, 0],
-    velocity: [0, -10, 0],
-    debugDomElement: document.getElementById('ball2')
+    mass: 1,
+    position: [0, 400, 400],
+    velocity: [0, -20, 0],
+    debugDomElement: document.getElementById('ball2'),
+    debugDomElement_v: document.getElementById('ball2_v')
 });
-*/
+
 Cafi.run();
