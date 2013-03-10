@@ -10,10 +10,11 @@ var Cafi = {
     E: Math.E,
     GRAVITY: 9.81,
     time: 0,
-    dT: 1000/50,
+    dT: 1000/30,
     enableTransitions: true,
+    collisionThreshold: 7,
     timeBreakPoint: 120*1000,
-    timeScale: 0.005,
+    timeScale: 0.01,
 
     models: [],
     colisionMatrix: [], // upper triangular matrix
@@ -37,7 +38,7 @@ var Cafi = {
             for (j = (Cafi__models || []).length-1; i < j; --j) {
                 jModel = Cafi__models[j];
                 //console.log(iModel.position.v3_getDistance(jModel.position));
-                if (iModel.position.v3_getDistance(jModel.position) < 1) {
+                if (iModel.position.v3_getDistance(jModel.position) < Cafi.collisionThreshold) {
                     //console.log('collision!', iModel.position.v3_getDistance(jModel.position));
                     Cafi.processModelsCollision(i, j);
                 }

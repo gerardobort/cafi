@@ -1,5 +1,5 @@
 var ball1 = new Cafi.Model({
-    mass: 2, 
+    mass: 7, 
     position: [0, 0, 400],
     velocity: [0, 20, 0],
     debugDomElement: document.getElementById('ball1'),
