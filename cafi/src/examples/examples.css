@@ -1,0 +1,56 @@
+#universe {
+    position: absolute;
+    overflow: hidden;
+    background: #000;
+    top: 0;
+    right: 0;
+    bottom: 0;
+    left: 0;
+    -webkit-perspective: 800px;
+}
+
+#universe #reference-system {
+    position: absolute;
+    background: rgba(255,255,255,0.1);
+    top: 0;
+    right: 0;
+    bottom: 0;
+    left: 0;
+    -webkit-transform: scaleY(-1);
+    border: 1px solid yellow;
+    -webkit-transform-style: preserve-3d;
+}
+
+.model {
+    position: absolute;
+    width: 6px;
+    height: 6px;
+    border-radius: 100%;
+    background: gray;
+    opacity: 1;
+}
+
+#model-0 {
+    background: red;
+}
+
+#model-1 {
+    background: green;
+}
+
+.vector {
+    position: absolute;
+    width: 30px;
+    height: 1px;
+    margin: 3px 0 0 3px;
+    background: yellow;
+    z-index: 0;
+    opacity: 0.5;
+}
+
+.vector.direction {
+    background: yellow;
+}
+.vector.velocity {
+    background: pink;
+}
