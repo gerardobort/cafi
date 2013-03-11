@@ -9,25 +9,81 @@
     -webkit-perspective: 800px;
 }
 
-#universe #reference-system {
+#reference-system {
+    position: absolute;
+    background: rgba(255,255,255,0.01);
+    top: 0;
+    right: 0;
+    bottom: 0;
+    left: 0;
+    border-bottom: 1px solid blue;
+    -webkit-transform-style: preserve-3d;
+}
+
+#reference-system #x-axis,
+#reference-system #y-axis,
+#reference-system #z-axis {
+    position: absolute;
+    width: 80px;
+    height: 3px;
+    background: white;
+    -webkit-transform-origin: 0 0 0;
+}
+
+#reference-system #x-axis {
+    background: red;
+    -webkit-transform: rotate3d(0, 0, 0, 0deg);
+}
+
+#reference-system #y-axis {
+    background: green;
+    -webkit-transform: rotate3d(0, 0, 1, 90deg);
+}
+
+#reference-system #z-axis {
+    background: blue;
+    -webkit-transform: rotate3d(0, -1, 0, 90deg);
+}
+
+#reference-system #x-axis:after {
+    content: 'x';
+    color: white;
+    margin-left: 70px;
+}
+
+#reference-system #y-axis:after {
+    content: 'y';
+    color: white;
+    margin-left: 70px;
+}
+
+#reference-system #z-axis:after {
+    content: 'z';
+    color: white;
+    margin-left: 70px;
+}
+
+#reference-system #floor {
     position: absolute;
     background: rgba(255,255,255,0.1);
     top: 0;
     right: 0;
     bottom: 0;
     left: 0;
-    -webkit-transform: scaleY(-1);
-    border: 1px solid yellow;
-    -webkit-transform-style: preserve-3d;
+    border: 1px dotted blue;
+    -webkit-transform-origin: 0 0 0;
+    -webkit-transform: rotate3d(1, 0, 0, 90deg);
 }
 
 .model {
     position: absolute;
-    width: 6px;
-    height: 6px;
+    width: 60px;
+    height: 60px;
+    margin: -30px 0 0 -30px;
     border-radius: 100%;
     background: gray;
     opacity: 1;
+    -webkit-transform-origin: 50% 50% 50%;
 }
 
 #model-0 {
@@ -40,12 +96,11 @@
 
 .vector {
     position: absolute;
-    width: 30px;
-    height: 1px;
-    margin: 3px 0 0 3px;
+    width: 1px;
+    height: 40px;
     background: yellow;
     z-index: 0;
-    opacity: 0.5;
+    opacity: 1;
 }
 
 .vector.direction {
@@ -53,4 +108,10 @@
 }
 .vector.velocity {
     background: pink;
+}
+.vector.direction.x {
+    background: red;
+}
+.vector.direction.z {
+    background: blue;
 }
