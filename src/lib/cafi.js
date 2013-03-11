@@ -11,8 +11,8 @@ var Cafi = {
     dT: 1000/20,
     enableTransitions: true,
     collisionThreshold: 7,
-    timeBreakPoint: 120*1000,
-    timeScale: 0.01,
+    timeBreakPoint: 5*60*1000,
+    timeScale: 0.001,
     containerDomElement: document.getElementById('reference-system'),
     models: [],
     colisionMatrix: [], // upper triangular matrix
@@ -26,8 +26,8 @@ var Cafi = {
         }
     },
     initializeRender: function () {
-        this.containerDomElement.style.webkitTransformOrigin = '50% 50% 0';
-        this.containerDomElement.style.webkitTransform = 'rotate3d(0, -1, 1, 180deg) scaleX(-1) translate3d(0px, 0px, -100px) rotate3d(0, 0, 1, 0deg)';
+        this.containerDomElement.style.webkitTransformOrigin = '50% 0 -50%';
+        this.containerDomElement.style.webkitTransform = 'translate3d(0px, -100px, -600px) scaleZ(-1) rotate3d(1, 0, 0, 180deg)';
     },
     mainLoop: function () {
         var i, j, iModel, jModel, Cafi__models = Cafi.models, Cafi__collisionMatrix = Cafi.colisionMatrix;
@@ -151,11 +151,11 @@ Array.prototype.v3_substract = function (b) {
 };
 Array.prototype.v3_getAngleX = function () {
     var a = this;
-    return Math.atan2(a[2], a[1])/Cafi.PI*180;
+    return Math.atan2(a[1], a[0])/Cafi.PI*180;
 };
-Array.prototype.v3_getAngleY = function () {
+Array.prototype.v3_getAngleZ = function () {
     var a = this;
-    return Math.atan2(a[2], a[0])/Cafi.PI*180;
+    return Math.atan2(a[1], a[2])/Cafi.PI*180;
 };
 Array.prototype.v3_dotProduct = function (value) {
     var a = this;
@@ -231,16 +231,16 @@ Cafi.Model.prototype.process = function (skipCollisions) {
         ce,
         pe = m*Cafi.GRAVITY*p[2];
 
-    if ((p[2] + (v[2] + a[2]*dt)*dt)  > 0) { // TODO floor limit --> potential energy
-        a[2] -= Cafi.GRAVITY;
+    if ((p[1] + (v[1] + a[1]*dt)*dt)  > 0) { // TODO floor limit --> potential energy
+        a[1] -= Cafi.GRAVITY;
     }
 
     this.forces = [];
     this.velocity = v = [v[0] + a[0]*dt, v[1] + a[1]*dt, v[2] + a[2]*dt];
     this.position = p1 = [p[0] + v[0]*dt, p[1] + v[1]*dt, p[2] + v[2]*dt];
     this.direction = p1.v3_substract(p).v3_getVersor();
-    this.potentialEnergy = pe = m*Cafi.GRAVITY*p1[2];
-    this.cineticEnergy = ce = 0.5*m*v[2]*v[2];
+    this.potentialEnergy = pe = m*Cafi.GRAVITY*p1[1];
+    this.cineticEnergy = ce = 0.5*m*v[1]*v[1];
 
 
     if (!v[0] && !v[1] && !v[2]) {
@@ -249,23 +249,23 @@ Cafi.Model.prototype.process = function (skipCollisions) {
 
     // main container edge collisions
     if (!skipCollisions) {
-        if (p1[2] < 0) {
-            this.processCollision([0, 0, 1]);
+        if (p1[0] < 0) {
+            this.processCollision([1, 0, 0]);
         }
-        if (p1[2] > 2000) {
-            this.processCollision([0, 0, -1]);
+        if (p1[0] > window.innerWidth) {
+            this.processCollision([-1, 0, 0]);
         }
         if (p1[1] < 0) {
             this.processCollision([0, 1, 0]);
         }
-        if (p1[1] > window.innerWidth) {
+        if (p1[1] > 2000) {
             this.processCollision([0, -1, 0]);
         }
-        if (p1[0] < 0) {
-            this.processCollision([1, 0, 0]);
+        if (p1[2] < 0) {
+            this.processCollision([0, 0, 1]);
         }
-        if (p1[0] > window.innerHeight) {
-            this.processCollision([-1, 0, 0]);
+        if (p1[2] > 600) {
+            this.processCollision([0, 0, -1]);
         }
     }
 };
@@ -285,50 +285,49 @@ Cafi.Model.prototype.initializeRender = function () {
     var container = Cafi.containerDomElement,   
         styleSheet = document.styleSheets[0],
         debugDomElement = document.createElement('div'),
-        debugDomElement_direction = document.createElement('div'),
-        debugDomElement_velocity = document.createElement('div');
+        debugDomElement_direction_x = document.createElement('div'),
+        debugDomElement_direction_z = document.createElement('div');
 
     debugDomElement.id = 'model-' + this.id;
     debugDomElement.className = 'model';
-    debugDomElement_direction.id = 'model-' + this.id + 'vector-direction';
-    debugDomElement_direction.className = 'vector direction';
-    //debugDomElement_velocity.id = 'model-' + this.id + 'vector-velocity';
-    //debugDomElement_velocity.className = 'vector velocity';
+    debugDomElement_direction_x.id = 'model-' + this.id + '-vector-direction-x';
+    debugDomElement_direction_x.className = 'vector direction x';
+    debugDomElement_direction_x.style.webkitTransformOrigin = '0 0 0';
+    debugDomElement_direction_z.id = 'model-' + this.id + '-vector-direction-z';
+    debugDomElement_direction_z.className = 'vector direction z';
+    debugDomElement_direction_z.style.webkitTransformOrigin = '0 0 0';
 
     if (Cafi.enableTransitions) {
         debugDomElement.style.webkitTransition = 'all ' + Cafi.dT + 'ms linear';
-        debugDomElement_direction.style.webkitTransition = 'all ' + Cafi.dT + 'ms linear';
-        //debugDomElement_velocity.style.webkitTransition = 'all ' + Cafi.dT + 'ms linear';
+        debugDomElement_direction_x.style.webkitTransition = 'all ' + Cafi.dT + 'ms linear';
+        debugDomElement_direction_z.style.webkitTransition = 'all ' + Cafi.dT + 'ms linear';
     }
 
     container.appendChild(debugDomElement);
-    container.appendChild(debugDomElement_direction);
-    //container.appendChild(debugDomElement_velocity);
+    container.appendChild(debugDomElement_direction_x);
+    container.appendChild(debugDomElement_direction_z);
 
     this.debugDomElement = debugDomElement;
-    this.debugDomElement_direction = debugDomElement_direction;
-    //this.debugDomElement_velocity = debugDomElement_velocity;
+    this.debugDomElement_direction_x = debugDomElement_direction_x;
+    this.debugDomElement_direction_z = debugDomElement_direction_z;
 };
 
 Cafi.Model.prototype.render = function () {
-    var translate3d = 'translate3d(' + this.position[1] + 'px,' + this.position[0] + 'px,' + this.position[2] + 'px)',
-        translate2d = 'translate(' + this.position[1] + 'px,' + this.position[2] + 'px)';
+    var translate3d = 'translate3d(' + this.position[0] + 'px,' + this.position[1] + 'px,' + this.position[2] + 'px)';
 
-    this.debugDomElement.style.webkitTransform = translate3d + ' rotateX(90deg)';
-    //this.debugDomElement.style.webkitTransform = translate3d + ' scale3d(' + this.mass + ',' + this.mass + ',' + this.mass +') rotateX(90deg)';
+    this.debugDomElement.style.webkitTransform = translate3d;
+    var mScale = this.mass/10;
+    this.debugDomElement.style.webkitTransform = translate3d + ' scale3d(' + mScale + ', ' + mScale + ', ' + mScale +') ';
 
-    this.debugDomElement_direction.style.webkitTransformOrigin = '0 0 0';
-    this.debugDomElement_direction.style.webkitTransform = translate3d 
-        + ' rotate3d(0, -1, 1, ' + (this.direction.v3_getAngleX()) + 'deg)'
-        + ' rotate3d(0, 0, 1, ' + (this.direction.v3_getAngleY()) + 'deg)';
+    this.debugDomElement_direction_x.style.webkitTransform = translate3d 
+        + ' rotateZ(' + (this.direction.v3_getAngleX()-90) + 'deg)'
 
-/*
-    this.debugDomElement_velocity.style.webkitTransformOrigin = '0 0 0';
-    this.debugDomElement_velocity.style.webkitTransform = translate3d
-        + ' rotate3d(0, -1, 1, ' + (this.velocity.v3_getAngleX()) + 'deg)'
-        + ' rotate3d(1, 0, 0, ' + (this.velocity.v3_getAngleY()) + 'deg)';
-*/
+    this.debugDomElement_direction_z.style.webkitTransform = translate3d 
+        + ' scaleY(-1)'
+        + ' rotateX(' + (this.direction.v3_getAngleZ()+90) + 'deg)';
 
+    // add a unique versor for the direction is a litte tricky, coz we should use quaternions, 
+    // and thereś no implementation for that yet
 };
 
 // TODO
