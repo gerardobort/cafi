@@ -36,9 +36,9 @@ var Cafi = {
             iModel.process();
         }
 
-        for (i = (Cafi__models || []).length-1; i > -1 && Cafi__models[i]; --i) {
+        for (i = (Cafi__models || []).length-1; i > -1; --i) {
             iModel = Cafi__models[i];
-            for (j = (Cafi__models || []).length-1; i < j && Cafi__models[j]; --j) {
+            for (j = (Cafi__models || []).length-1; i < j; --j) {
                 jModel = Cafi__models[j];
                 if (iModel.position.v3_getDistance(jModel.position) < Cafi.collisionThreshold) {
                     Cafi.processModelsCollision(i, j);
@@ -46,7 +46,7 @@ var Cafi = {
             }
         }
 
-        for (i = (Cafi__models || []).length-1; i > -1 && Cafi__models[i]; --i) {
+        for (i = (Cafi__models || []).length-1; i > -1; --i) {
             iModel = Cafi__models[i];
             iModel.render();
         }
@@ -120,9 +120,6 @@ var Cafi = {
 
 // https://github.com/mono/MonoGame/commit/a840f0e5d8b8b91490a8df0b159dea9975ddb2f6
 Array.prototype.v3_reflect = function (normal) {
-    // I is the original array
-    // N is the normal of the incident plane
-    // R = I - (2 * N * ( DotProduct[ I,N] ))
     var reflectedVector = [],
         vector = this,
         dotProduct = ((vector[0] * normal[0]) + (vector[1] * normal[1])) + (vector[2] * normal[2]);
@@ -165,13 +162,17 @@ Array.prototype.v3_dotProduct = function (value) {
         return [a[0]*value[0], a[1]*value[1], a[2]*value[2]];
     } 
 };
-Array.prototype.v3_product = function (value) {
+Array.prototype.v3_product = function (b) {
     var a = this;
-    return a[0]*value[0] + a[1]*value[1] + a[2]*value[2];
+    return [
+        a[1]*b[2] - b[1]*a[2],
+        -(a[0]*b[2] - b[0]*a[2]),
+        a[0]*b[1] - b[0]*a[1]
+    ];
 };
 Array.prototype.v3_cos = function (b) {
     var a = this;
-    return a.v3_product(b)/(a.v3_getModule()*b.v3_getModule());
+    return a.v3_dotProduct(b)/(a.v3_getModule()*b.v3_getModule());
 };
 
 
@@ -285,49 +286,41 @@ Cafi.Model.prototype.initializeRender = function () {
     var container = Cafi.containerDomElement,   
         styleSheet = document.styleSheets[0],
         debugDomElement = document.createElement('div'),
-        debugDomElement_direction_x = document.createElement('div'),
-        debugDomElement_direction_z = document.createElement('div');
+        debugDomElement_direction = document.createElement('div');
 
     debugDomElement.id = 'model-' + this.id;
     debugDomElement.className = 'model';
-    debugDomElement_direction_x.id = 'model-' + this.id + '-vector-direction-x';
-    debugDomElement_direction_x.className = 'vector direction x';
-    debugDomElement_direction_x.style.webkitTransformOrigin = '0 0 0';
-    debugDomElement_direction_z.id = 'model-' + this.id + '-vector-direction-z';
-    debugDomElement_direction_z.className = 'vector direction z';
-    debugDomElement_direction_z.style.webkitTransformOrigin = '0 0 0';
+    debugDomElement_direction.id = 'model-' + this.id + '-vector-direction-z';
+    debugDomElement_direction.className = 'vector direction';
+    debugDomElement_direction.style.webkitTransformOrigin = '0 0 0';
 
     if (Cafi.enableTransitions) {
         debugDomElement.style.webkitTransition = 'all ' + Cafi.dT + 'ms linear';
-        debugDomElement_direction_x.style.webkitTransition = 'all ' + Cafi.dT + 'ms linear';
-        debugDomElement_direction_z.style.webkitTransition = 'all ' + Cafi.dT + 'ms linear';
+        debugDomElement_direction.style.webkitTransition = 'all ' + Cafi.dT + 'ms linear';
     }
 
     container.appendChild(debugDomElement);
-    container.appendChild(debugDomElement_direction_x);
-    container.appendChild(debugDomElement_direction_z);
+    container.appendChild(debugDomElement_direction);
 
     this.debugDomElement = debugDomElement;
-    this.debugDomElement_direction_x = debugDomElement_direction_x;
-    this.debugDomElement_direction_z = debugDomElement_direction_z;
+    this.debugDomElement_direction = debugDomElement_direction;
 };
 
 Cafi.Model.prototype.render = function () {
-    var translate3d = 'translate3d(' + this.position[0] + 'px,' + this.position[1] + 'px,' + this.position[2] + 'px)';
+    var translate3d = 'translate3d(' + this.position.join('px, ') + 'px)',
+        mScale = this.mass/10,
+        directionVersor = this.direction.v3_getVersor();
 
-    this.debugDomElement.style.webkitTransform = translate3d;
-    var mScale = this.mass/10;
-    this.debugDomElement.style.webkitTransform = translate3d + ' scale3d(' + mScale + ', ' + mScale + ', ' + mScale +') ';
+    this.debugDomElement.style.webkitTransform = translate3d
+        + ' scale3d(' + mScale + ', ' + mScale + ', ' + mScale +')';
 
-    this.debugDomElement_direction_x.style.webkitTransform = translate3d 
-        + ' rotateZ(' + (this.direction.v3_getAngleX()-90) + 'deg)'
+    this.debugDomElement_direction.style.webkitTransform = translate3d 
+        + ' rotate3d(' + directionVersor.v3_product([0,1,0]).v3_getVersor().join(',') + ', ' + (directionVersor.v3_getAngleXZ()-90) + 'deg)';
+};
 
-    this.debugDomElement_direction_z.style.webkitTransform = translate3d 
-        + ' scaleY(-1)'
-        + ' rotateX(' + (this.direction.v3_getAngleZ()+90) + 'deg)';
-
-    // add a unique versor for the direction is a litte tricky, coz we should use quaternions, 
-    // and thereś no implementation for that yet
+Array.prototype.v3_getAngleXZ = function () {
+    var a = this;
+    return Math.atan2(a[1], Math.sqrt(a[0]*a[0] + a[2]*a[2]))/Cafi.PI*180;
 };
 
 // TODO

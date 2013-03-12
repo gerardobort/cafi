@@ -24,7 +24,7 @@ var ball4 = new Cafi.Model({
 
 document.onmousedown = function (e) {
     var ballx = new Cafi.Model({
-        mass: 1,
+        mass: 2,
         position: [e.clientX, e.clientY, 400],
         velocity: [parseInt(Math.random()*50*(e.clientX > window.innerWidth/2 ? -1 : 1), 10), parseInt(Math.random()*100, 10), -20]
     });
