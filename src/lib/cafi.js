@@ -19,7 +19,7 @@ var Cafi = {
     colisionMatrix: [], // upper triangular matrix
     tiemr: null,
     octree: [], // multidimentional octree
-    octreeMaxDivisor: 2,
+    octreeMaxDepth: 4,
     universeWidth: 800,
     universeHeight: 600,
     universeDepth: 600,
@@ -33,16 +33,20 @@ var Cafi = {
     },
     initializeRender: function () {
         this.containerDomElement.style.width = this.universeWidth + 'px';
-        this.containerDomElement.style.height = this.universeDepth + 'px';
-        this.universeDomElement.style.webkitPerspective = this.universeHeight + 'px';
+        this.containerDomElement.style.height = this.universeHeight + 'px';
+        this.universeDomElement.style.webkitPerspective = this.universeDepth + 'px';
     },
     mainLoop: function () {
         var i, j, iModel, jModel, Cafi__models = Cafi.models, Cafi__collisionMatrix = Cafi.colisionMatrix;
+
+        Cafi.resetOctree();
         for (i = (Cafi__models || []).length-1; i > -1 && Cafi__models[i]; --i) {
             iModel = Cafi__models[i];
             iModel.process();
+            Cafi.setModelInOctree(iModel);
         }
 
+        // @TODO traverse the Cafi.octree rather than the Cafi_models
         for (i = (Cafi__models || []).length-1; i > -1; --i) {
             iModel = Cafi__models[i];
             for (j = (Cafi__models || []).length-1; i < j; --j) {
@@ -121,6 +125,46 @@ var Cafi = {
             b_v1[1]*b_iv1 + b_v2[1]*b_iv2,
             b_v1[2]*b_iv1 + b_v2[2]*b_iv2
         ];
+    },
+    resetOctree: function () {
+        delete this.octree;
+        this.octree = [];
+    },
+    setModelInOctree: function (model) {
+        var p = model.position, binaryPosition, modelOctreePath = [],
+            parentOctree = Cafi.octree, currentOctree, octreeDepth, octreeMaxDepth = Cafi.octreeMaxDepth, divisor;
+            width = Cafi.universeWidth, height = Cafi.universeHeight, depth = Cafi.universeDepth;
+
+        for (octreeDepth = 1; octreeDepth < octreeMaxDepth; ++octreeDepth) {
+            /*
+             * binary space cut:
+             * x(0): left=0 - right=1
+             * y(1): bottom=0 - top=1
+             * z(2): back=0 - front=1
+             */
+            binaryPosition = parseInt('0' 
+                + (p[2] > (depth=depth/2) ? 1 : 0)
+                + (p[1] > (height=height/2) ? 1 : 0)
+                + (p[0] > (width=width/2) ? 1 : 0), 2);
+
+            if (octreeDepth === octreeMaxDepth-1) {
+                if ('array' === typeof currentOctree[binaryPosition]) {
+                    currentOctree[binaryPosition].push(model);
+                } else {
+                    currentOctree[binaryPosition] = [model];
+                }
+            } else {
+                parentOctree = currentOctree || parentOctree;
+                currentOctree = []; // new octree depth
+                parentOctree[binaryPosition] = currentOctree;
+            }
+            modelOctreePath.push(binaryPosition);
+        }
+        model._Cafi_octreePath = modelOctreePath;
+        model._Cafi_currentOctree = currentOctree;
+    },
+    getNearModelsInOctree: function (model) {
+        return model._Cafi_currentOctree;
     }
 };
 
@@ -203,11 +247,12 @@ Cafi.Model = function (options) {
     this.position = options.position || [0, 0, 0];
     this.direction = options.position || [0, 0, 0];
 
-    this.name = options.name || null;
 
     // Endo Vars
     this.acceleration = options.acceleration || [0, 0, 0];
     this.id = Cafi.models.length;
+
+    this.name = options.name || 'model_' + this.id;
 
     // register model
     Cafi.models.push(this);
@@ -281,8 +326,6 @@ Cafi.Model.prototype.process = function (skipCollisions) {
         if (p1[2] > Cafi.universeDepth) {
             this.processCollision([0, 0, -1]);
         }
-    } else {
-        p1
     }
 };
 
@@ -308,7 +351,7 @@ Cafi.Model.prototype.initializeRender = function () {
     debugDomElement_direction.id = 'model-' + this.id + '-vector-direction-z';
     debugDomElement_direction.className = 'vector direction';
     debugDomElement_direction.style.webkitTransformOrigin = '0 0 0';
-    debugDomElement_direction.dataset.label = this.name || 'model_' + this.id;
+    debugDomElement_direction.dataset.label = this.name;
 
     if (Cafi.enableTransitions) {
         debugDomElement.style.webkitTransition = 'all ' + Cafi.dT + 'ms linear';
