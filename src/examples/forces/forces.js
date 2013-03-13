@@ -19,14 +19,16 @@ var ball3 = new Cafi.Model({
 var ball4 = new Cafi.Model({
     mass: 7, 
     position: [0, 600, 0],
-    velocity: [60, 0, 60]
+    velocity: [60, 0, 60],
+    name: "bolita copada"
 });
 
 document.onmousedown = function (e) {
     var ballx = new Cafi.Model({
         mass: 2,
         position: [e.clientX, e.clientY, 400],
-        velocity: [parseInt(Math.random()*50*(e.clientX > window.innerWidth/2 ? -1 : 1), 10), parseInt(Math.random()*100, 10), -20]
+        velocity: [parseInt(Math.random()*50*(e.clientX > window.innerWidth/2 ? -1 : 1), 10), parseInt(Math.random()*100, 10), -20],
+        name: 'fired one'
     });
 }
 
