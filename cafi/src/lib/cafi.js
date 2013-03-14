@@ -8,15 +8,26 @@ var Cafi = {
     E: Math.E,
     GRAVITY: 9.81,
     time: 0,
-    dT: 1000/20,
+    dT: 1000/29,
+    K: 9E9,
+    em: 9.1E-28, 
+    eq: -1.6E-19,
+    pm: 1.67E-24,
+    pq: 1.6E-19,
     enableTransitions: true,
     collisionThreshold: 7,
     timeBreakPoint: 5*60*1000,
-    timeScale: 0.001,
-    containerDomElement: document.getElementById('reference-system'),
+    timeScale: 0.003,
+    universeDomElement: document.getElementById('universe'),
+    containerDomElement: document.getElementById('system'),
     models: [],
     colisionMatrix: [], // upper triangular matrix
     tiemr: null,
+    octree: [], // multidimentional octree
+    octreeMaxDepth: 4,
+    universeWidth: 1000,
+    universeHeight: 600,
+    universeDepth: 600,
     initialize: function () {
         var i, iModel, Cafi__models = Cafi.models;
         this.initializeRender();
@@ -26,16 +37,21 @@ var Cafi = {
         }
     },
     initializeRender: function () {
-        this.containerDomElement.style.webkitTransformOrigin = '50% 0 -50%';
-        this.containerDomElement.style.webkitTransform = 'translate3d(0px, -100px, -600px) scaleZ(-1) rotate3d(1, 0, 0, 180deg)';
+        this.containerDomElement.style.width = this.universeWidth + 'px';
+        this.containerDomElement.style.height = this.universeHeight + 'px';
+        this.universeDomElement.style.webkitPerspective = this.universeDepth + 'px';
     },
     mainLoop: function () {
         var i, j, iModel, jModel, Cafi__models = Cafi.models, Cafi__collisionMatrix = Cafi.colisionMatrix;
-        for (i = (Cafi__models || []).length-1; i > -1 && Cafi__models[i]; --i) {
+
+        Cafi.resetOctree();
+        for (i = (Cafi__models || []).length-1; i > -1; --i) {
             iModel = Cafi__models[i];
             iModel.process();
+            Cafi.setModelInOctree(iModel);
         }
 
+        // @TODO traverse the Cafi.octree rather than the Cafi_models
         for (i = (Cafi__models || []).length-1; i > -1; --i) {
             iModel = Cafi__models[i];
             for (j = (Cafi__models || []).length-1; i < j; --j) {
@@ -90,17 +106,17 @@ var Cafi = {
         var modelA = this.models[i],
             modelB = this.models[j];
 
-        // inelastic collision
+        // plastic collision
         // modelA.velocity = modelB.direction.v3_dotProduct(modelA.velocity.v3_getModule());
         // modelB.velocity = modelA.direction.v3_dotProduct(modelB.velocity.v3_getModule());
 
-        // elastic collision
+        // inelastic collision
         var a_v1 = modelA.velocity,
             b_v1 = modelB.velocity,
             a_v2 = modelB.direction.v3_dotProduct(a_v1.v3_getModule()),
             b_v2 = modelA.direction.v3_dotProduct(b_v1.v3_getModule()),
-            a_iv2 = 1.4*modelB.mass/(modelA.mass+modelB.mass),
-            b_iv2 = 1.4*modelA.mass/(modelA.mass+modelB.mass),
+            a_iv2 = 1.4*modelB.cineticEnergy/(modelA.cineticEnergy+modelB.cineticEnergy), // 1.4 is hardcoded :P 
+            b_iv2 = 1.4*modelA.cineticEnergy/(modelA.cineticEnergy+modelB.cineticEnergy),
             a_iv1 = 1-a_iv2,
             b_iv1 = 1-b_iv2;
 
@@ -114,6 +130,46 @@ var Cafi = {
             b_v1[1]*b_iv1 + b_v2[1]*b_iv2,
             b_v1[2]*b_iv1 + b_v2[2]*b_iv2
         ];
+    },
+    resetOctree: function () {
+        delete this.octree;
+        this.octree = [];
+    },
+    setModelInOctree: function (model) {
+        var p = model.position, binaryPosition, modelOctreePath = [],
+            parentOctree = Cafi.octree, currentOctree, octreeDepth, octreeMaxDepth = Cafi.octreeMaxDepth, divisor;
+            width = Cafi.universeWidth, height = Cafi.universeHeight, depth = Cafi.universeDepth;
+
+        for (octreeDepth = 1; octreeDepth < octreeMaxDepth; ++octreeDepth) {
+            /*
+             * binary space cut:
+             * x(0): left=0 - right=1
+             * y(1): bottom=0 - top=1
+             * z(2): back=0 - front=1
+             */
+            binaryPosition = parseInt('0' 
+                + (p[2] > (depth=depth/2) ? 1 : 0)
+                + (p[1] > (height=height/2) ? 1 : 0)
+                + (p[0] > (width=width/2) ? 1 : 0), 2);
+
+            if (octreeDepth === octreeMaxDepth-1) {
+                if ('array' === typeof currentOctree[binaryPosition]) {
+                    currentOctree[binaryPosition].push(model);
+                } else {
+                    currentOctree[binaryPosition] = [model];
+                }
+            } else {
+                parentOctree = currentOctree || parentOctree;
+                currentOctree = []; // new octree depth
+                parentOctree[binaryPosition] = currentOctree;
+            }
+            modelOctreePath.push(binaryPosition);
+        }
+        model._Cafi_octreePath = modelOctreePath;
+        model._Cafi_currentOctree = currentOctree;
+    },
+    getNearModelsInOctree: function (model) {
+        return model._Cafi_currentOctree;
     }
 };
 
@@ -154,6 +210,10 @@ Array.prototype.v3_getAngleZ = function () {
     var a = this;
     return Math.atan2(a[1], a[2])/Cafi.PI*180;
 };
+Array.prototype.v3_getAngleXZ = function () {
+    var a = this;
+    return Math.atan2(a[1], Math.sqrt(a[0]*a[0] + a[2]*a[2]))/Cafi.PI*180;
+};
 Array.prototype.v3_dotProduct = function (value) {
     var a = this;
     if (typeof value === 'number') {
@@ -191,10 +251,13 @@ Cafi.Model = function (options) {
     this.velocity = options.velocity || [0, 0, 0];
     this.position = options.position || [0, 0, 0];
     this.direction = options.position || [0, 0, 0];
+    this.charge = options.charge || 0;
 
     // Endo Vars
     this.acceleration = options.acceleration || [0, 0, 0];
     this.id = Cafi.models.length;
+
+    this.name = options.name || 'model_' + this.id;
 
     // register model
     Cafi.models.push(this);
@@ -209,14 +272,32 @@ Cafi.Model = function (options) {
  */
 Cafi.Model.prototype.getResultantForce = function () {
     var resultantForce = [0, 0, 0],
-        forces = this.forces,
+        Cafi__models = Cafi.models,
+        K = Cafi.K,
+        modelA = this, modelB, q = this.charge, op, r, R,
         i, f;
 
-    for (i = (forces || []).length-1; i > -1; --i) {
-        f = forces[i];
-        resultantForce[0] += f[0];
-        resultantForce[1] += f[1];
-        resultantForce[2] += f[2];
+    for (i = (Cafi__models || []).length-1; i > -1; --i) {
+        modelB = Cafi__models[i];
+        if (modelB === modelA) {
+            continue;
+        }
+
+        if (modelA.charge && modelB.charge) {
+            if (modelA.charge * modelB.charge < 0) {
+                op = modelB.position.v3_substract(modelA.position);
+            } else {
+                op = modelA.position.v3_substract(modelB.position);
+            }
+
+            R = op.v3_getModule() +100; // 100 is a hardcoded value :P - it's to prevent ->inifinite divisor
+            r = op.v3_getVersor();
+            f = (K*Math.abs(q*modelB.charge))/(R*R);
+            resultantForce[0] += f*r[0];
+            resultantForce[1] += f*r[1];
+            resultantForce[2] += f*r[2];
+        }
+
     }
     return resultantForce;
 };
@@ -253,19 +334,19 @@ Cafi.Model.prototype.process = function (skipCollisions) {
         if (p1[0] < 0) {
             this.processCollision([1, 0, 0]);
         }
-        if (p1[0] > window.innerWidth) {
+        if (p1[0] > Cafi.universeWidth) {
             this.processCollision([-1, 0, 0]);
         }
         if (p1[1] < 0) {
             this.processCollision([0, 1, 0]);
         }
-        if (p1[1] > 2000) {
+        if (p1[1] > Cafi.universeHeight) {
             this.processCollision([0, -1, 0]);
         }
         if (p1[2] < 0) {
             this.processCollision([0, 0, 1]);
         }
-        if (p1[2] > 600) {
+        if (p1[2] > Cafi.universeDepth) {
             this.processCollision([0, 0, -1]);
         }
     }
@@ -293,10 +374,11 @@ Cafi.Model.prototype.initializeRender = function () {
     debugDomElement_direction.id = 'model-' + this.id + '-vector-direction-z';
     debugDomElement_direction.className = 'vector direction';
     debugDomElement_direction.style.webkitTransformOrigin = '0 0 0';
+    debugDomElement_direction.dataset.label = this.name;
 
     if (Cafi.enableTransitions) {
         debugDomElement.style.webkitTransition = 'all ' + Cafi.dT + 'ms linear';
-        debugDomElement_direction.style.webkitTransition = 'all ' + Cafi.dT + 'ms linear';
+        //debugDomElement_direction.style.webkitTransition = 'all ' + Cafi.dT + 'ms linear';
     }
 
     container.appendChild(debugDomElement);
@@ -316,12 +398,12 @@ Cafi.Model.prototype.render = function () {
 
     this.debugDomElement_direction.style.webkitTransform = translate3d 
         + ' rotate3d(' + directionVersor.v3_product([0,1,0]).v3_getVersor().join(',') + ', ' + (directionVersor.v3_getAngleXZ()-90) + 'deg)';
+
+    if (this.charge) {
+        this.debugDomElement_direction.style.background = (this.charge < 0 ? 'blue' : 'red');
+    }
 };
 
-Array.prototype.v3_getAngleXZ = function () {
-    var a = this;
-    return Math.atan2(a[1], Math.sqrt(a[0]*a[0] + a[2]*a[2]))/Cafi.PI*180;
-};
 
 // TODO
 Cafi.Bounding = {
