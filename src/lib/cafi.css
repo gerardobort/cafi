@@ -109,6 +109,6 @@
 }
 
 .vector.direction {
-    background: rgba(255, 0, 0, 0.5);
+    background: green;
     border-bottom: 10px solid violet;
 }

@@ -1,34 +1,41 @@
-var ball1 = new Cafi.Model({
-    mass: 7, 
-    position: [0, 400, 400],
-    velocity: [20, -50, 0]
+var e1 = new Cafi.Model({
+    mass: 1, 
+    charge: 2E-2,
+    position: [250, 300, 200],
+    velocity: [50, 0, 0],
+    name: '1'
 });
 
-var ball2 = new Cafi.Model({
+var p1 = new Cafi.Model({
     mass: 1,
-    position: [400, 400, 400],
-    velocity: [-20, -50, 0]
+    charge: -2E-2,
+    position: [750, 500, 100],
+    velocity: [-50, 0, 0],
+    name: '2'
 });
 
-var ball3 = new Cafi.Model({
-    mass: 3,
-    position: [500, 400, 400],
-    velocity: [-30, 44, 0]
+var b1 = new Cafi.Model({
+    mass: 1, 
+    position: [250, 500, 200],
+    velocity: [80, 0, 0],
+    name: '1'
 });
 
-var ball4 = new Cafi.Model({
-    mass: 7, 
-    position: [0, 600, 0],
-    velocity: [60, 0, 60],
-    name: "bolita copada"
+var b2 = new Cafi.Model({
+    mass: 1,
+    position: [750, 500, 200],
+    velocity: [-50, 0, 0],
+    name: '2'
 });
 
+var i = 2;
 document.onmousedown = function (e) {
-    var ballx = new Cafi.Model({
-        mass: 2,
+    var px = new Cafi.Model({
+        mass: 1,
+        charge: 1E-2 * (i++%2 ? 1 : -1),
         position: [e.clientX, e.clientY, 400],
         velocity: [parseInt(Math.random()*50*(e.clientX > window.innerWidth/2 ? -1 : 1), 10), parseInt(Math.random()*100, 10), -20],
-        name: 'fired one'
+        name: ''
     });
 }
 

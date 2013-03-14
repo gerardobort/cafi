@@ -9,10 +9,15 @@ var Cafi = {
     GRAVITY: 9.81,
     time: 0,
     dT: 1000/29,
+    K: 9E9,
+    em: 9.1E-28, 
+    eq: -1.6E-19,
+    pm: 1.67E-24,
+    pq: 1.6E-19,
     enableTransitions: true,
     collisionThreshold: 7,
     timeBreakPoint: 5*60*1000,
-    timeScale: 0.001,
+    timeScale: 0.003,
     universeDomElement: document.getElementById('universe'),
     containerDomElement: document.getElementById('system'),
     models: [],
@@ -20,7 +25,7 @@ var Cafi = {
     tiemr: null,
     octree: [], // multidimentional octree
     octreeMaxDepth: 4,
-    universeWidth: 800,
+    universeWidth: 1000,
     universeHeight: 600,
     universeDepth: 600,
     initialize: function () {
@@ -40,7 +45,7 @@ var Cafi = {
         var i, j, iModel, jModel, Cafi__models = Cafi.models, Cafi__collisionMatrix = Cafi.colisionMatrix;
 
         Cafi.resetOctree();
-        for (i = (Cafi__models || []).length-1; i > -1 && Cafi__models[i]; --i) {
+        for (i = (Cafi__models || []).length-1; i > -1; --i) {
             iModel = Cafi__models[i];
             iModel.process();
             Cafi.setModelInOctree(iModel);
@@ -101,17 +106,17 @@ var Cafi = {
         var modelA = this.models[i],
             modelB = this.models[j];
 
-        // inelastic collision
+        // plastic collision
         // modelA.velocity = modelB.direction.v3_dotProduct(modelA.velocity.v3_getModule());
         // modelB.velocity = modelA.direction.v3_dotProduct(modelB.velocity.v3_getModule());
 
-        // elastic collision
+        // inelastic collision
         var a_v1 = modelA.velocity,
             b_v1 = modelB.velocity,
             a_v2 = modelB.direction.v3_dotProduct(a_v1.v3_getModule()),
             b_v2 = modelA.direction.v3_dotProduct(b_v1.v3_getModule()),
-            a_iv2 = 1.4*modelB.mass/(modelA.mass+modelB.mass),
-            b_iv2 = 1.4*modelA.mass/(modelA.mass+modelB.mass),
+            a_iv2 = 1.4*modelB.cineticEnergy/(modelA.cineticEnergy+modelB.cineticEnergy), // 1.4 is hardcoded :P 
+            b_iv2 = 1.4*modelA.cineticEnergy/(modelA.cineticEnergy+modelB.cineticEnergy),
             a_iv1 = 1-a_iv2,
             b_iv1 = 1-b_iv2;
 
@@ -246,7 +251,7 @@ Cafi.Model = function (options) {
     this.velocity = options.velocity || [0, 0, 0];
     this.position = options.position || [0, 0, 0];
     this.direction = options.position || [0, 0, 0];
-
+    this.charge = options.charge || 0;
 
     // Endo Vars
     this.acceleration = options.acceleration || [0, 0, 0];
@@ -267,14 +272,32 @@ Cafi.Model = function (options) {
  */
 Cafi.Model.prototype.getResultantForce = function () {
     var resultantForce = [0, 0, 0],
-        forces = this.forces,
+        Cafi__models = Cafi.models,
+        K = Cafi.K,
+        modelA = this, modelB, q = this.charge, op, r, R,
         i, f;
 
-    for (i = (forces || []).length-1; i > -1; --i) {
-        f = forces[i];
-        resultantForce[0] += f[0];
-        resultantForce[1] += f[1];
-        resultantForce[2] += f[2];
+    for (i = (Cafi__models || []).length-1; i > -1; --i) {
+        modelB = Cafi__models[i];
+        if (modelB === modelA) {
+            continue;
+        }
+
+        if (modelA.charge && modelB.charge) {
+            if (modelA.charge * modelB.charge < 0) {
+                op = modelB.position.v3_substract(modelA.position);
+            } else {
+                op = modelA.position.v3_substract(modelB.position);
+            }
+
+            R = op.v3_getModule() +100; // 100 is a hardcoded value :P - it's to prevent ->inifinite divisor
+            r = op.v3_getVersor();
+            f = (K*Math.abs(q*modelB.charge))/(R*R);
+            resultantForce[0] += f*r[0];
+            resultantForce[1] += f*r[1];
+            resultantForce[2] += f*r[2];
+        }
+
     }
     return resultantForce;
 };
@@ -375,6 +398,10 @@ Cafi.Model.prototype.render = function () {
 
     this.debugDomElement_direction.style.webkitTransform = translate3d 
         + ' rotate3d(' + directionVersor.v3_product([0,1,0]).v3_getVersor().join(',') + ', ' + (directionVersor.v3_getAngleXZ()-90) + 'deg)';
+
+    if (this.charge) {
+        this.debugDomElement_direction.style.background = (this.charge < 0 ? 'blue' : 'red');
+    }
 };
 
 
