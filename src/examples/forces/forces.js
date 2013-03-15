@@ -15,18 +15,19 @@ var p1 = new Cafi.Model({
 });
 
 var b1 = new Cafi.Model({
-    mass: 1, 
+    mass: 10, 
     position: [250, 500, 200],
     velocity: [80, 0, 0],
     name: '1'
 });
 
 var b2 = new Cafi.Model({
-    mass: 1,
+    mass: 10,
     position: [750, 500, 200],
     velocity: [-50, 0, 0],
     name: '2'
 });
+
 
 var i = 2;
 document.onmousedown = function (e) {

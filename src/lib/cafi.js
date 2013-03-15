@@ -9,6 +9,7 @@ var Cafi = {
     GRAVITY: 9.81,
     time: 0,
     dT: 1000/29,
+    G: 6.67E-11,
     K: 9E9,
     em: 9.1E-28, 
     eq: -1.6E-19,
@@ -25,9 +26,9 @@ var Cafi = {
     tiemr: null,
     octree: [], // multidimentional octree
     octreeMaxDepth: 4,
-    universeWidth: 1000,
-    universeHeight: 600,
-    universeDepth: 600,
+    universeWidth: window.screen.width,
+    universeHeight: window.screen.height,
+    universeDepth: window.screen.height,
     initialize: function () {
         var i, iModel, Cafi__models = Cafi.models;
         this.initializeRender();
@@ -273,9 +274,10 @@ Cafi.Model = function (options) {
 Cafi.Model.prototype.getResultantForce = function () {
     var resultantForce = [0, 0, 0],
         Cafi__models = Cafi.models,
+        G = Cafi.G,
         K = Cafi.K,
-        modelA = this, modelB, q = this.charge, op, r, R,
-        i, f;
+        modelA = this, modelB, m = this.mass, q = this.charge, dg, de, rg, re, R,
+        i, fe, fg;
 
     for (i = (Cafi__models || []).length-1; i > -1; --i) {
         modelB = Cafi__models[i];
@@ -283,21 +285,20 @@ Cafi.Model.prototype.getResultantForce = function () {
             continue;
         }
 
-        if (modelA.charge && modelB.charge) {
-            if (modelA.charge * modelB.charge < 0) {
-                op = modelB.position.v3_substract(modelA.position);
-            } else {
-                op = modelA.position.v3_substract(modelB.position);
-            }
-
-            R = op.v3_getModule() +100; // 100 is a hardcoded value :P - it's to prevent ->inifinite divisor
-            r = op.v3_getVersor();
-            f = (K*Math.abs(q*modelB.charge))/(R*R);
-            resultantForce[0] += f*r[0];
-            resultantForce[1] += f*r[1];
-            resultantForce[2] += f*r[2];
+        dg = de = modelB.position.v3_substract(modelA.position);
+        if (modelA.charge * modelB.charge > 0) {
+            de = modelA.position.v3_substract(modelB.position);
         }
 
+        R = dg.v3_getModule();
+        re = de.v3_getVersor();
+        rg = dg.v3_getVersor();
+        fg = (1E12*G*m*modelB.mass)/(R*R +1E3);
+        fe = (K*Math.abs(q*modelB.charge))/(R*R +1E4);
+
+        resultantForce[0] += fg*rg[0] + fe*re[0];
+        resultantForce[1] += fg*rg[1] + fe*re[1];
+        resultantForce[2] += fg*rg[2] + fe*re[2];
     }
     return resultantForce;
 };
@@ -323,11 +324,6 @@ Cafi.Model.prototype.process = function (skipCollisions) {
     this.direction = p1.v3_substract(p).v3_getVersor();
     this.potentialEnergy = pe = m*Cafi.GRAVITY*p1[1];
     this.cineticEnergy = ce = 0.5*m*v[1]*v[1];
-
-
-    if (!v[0] && !v[1] && !v[2]) {
-        //this.die();
-    }
 
     // main container edge collisions
     if (!skipCollisions) {
@@ -357,10 +353,6 @@ Cafi.Model.prototype.processCollision = function (normal) {
         v2 = this.velocity.v3_reflect(normal);
     this.velocity = v1.v3_cos(v2) > 0.987 ? [0, 0, 0] : v2;
     this.process(true); // re-calculate positioning
-}
-
-Cafi.Model.prototype.die = function () {
-    delete Cafi.models[this.id];
 }
 
 Cafi.Model.prototype.initializeRender = function () {
