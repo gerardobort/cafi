@@ -236,6 +236,13 @@ Array.prototype.v3_cos = function (b) {
     return a.v3_dotProduct(b)/(a.v3_getModule()*b.v3_getModule());
 };
 
+// @help plane and point operations
+// https://github.com/mono/MonoGame/blob/develop/MonoGame.Framework/Plane.cs
+Array.prototype.v3_classifyPlaneSide = function (plane) {
+    var a = this;
+    return a[0]*plane[0] + a[1]*plane[1] + a[2]*plane[2] + plane[3]; // plane[3] == D
+};
+
 
 /**
  * Cafi Model
@@ -351,7 +358,7 @@ Cafi.Model.prototype.process = function (skipCollisions) {
 Cafi.Model.prototype.processCollision = function (normal) {
     var v1 = this.velocity,
         v2 = this.velocity.v3_reflect(normal);
-    this.velocity = v1.v3_cos(v2) > 0.987 ? [0, 0, 0] : v2;
+    this.velocity = v1.v3_cos(v2) > 0.987 ? [0, 0, 0] : v2.v3_dotProduct(0.89); // velocity decreases by 11%
     this.process(true); // re-calculate positioning
 }
 
