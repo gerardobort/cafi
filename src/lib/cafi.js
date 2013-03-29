@@ -2,8 +2,28 @@
  * Cafi is an experimental Physics Engine based on Continuous DeltaT
  * @author gerardobort <gerardobort@gmail.com>
  */
-
 var Cafi = {
+    modules: [],
+    loadModules: function (moduleNames, callback) {
+        if ('string' === typeof moduleNames) {
+            moduleNames = [moduleNames];
+        }
+        var i, l = moduleNames.length;
+        for (i = 0; i < l; i++) {
+            var moduleName = moduleNames[i],
+                lastScriptElement = document.scripts[document.scripts.length-1],
+                scriptElement = document.createElement('script');
+            scriptElement.src = '/lib/' + moduleName + '.cafi.js';
+            if (i === l-1) {
+                console.log('modules loaded:', moduleNames)
+                scriptElement.onload = function () {
+                    callback && callback.apply(this, arguments);
+                    Cafi.modules.push(moduleName);
+                };
+            }
+            lastScriptElement.parentNode.appendChild(scriptElement);
+        }
+    },
     PI: Math.PI,
     E: Math.E,
     GRAVITY: 9.81,
@@ -20,7 +40,6 @@ var Cafi = {
     timeBreakPoint: 5*60*1000,
     timeScale: 0.003,
     universeDomElement: document.getElementById('universe'),
-    containerDomElement: document.getElementById('system'),
     models: [],
     colisionMatrix: [], // upper triangular matrix
     tiemr: null,
@@ -38,9 +57,7 @@ var Cafi = {
         }
     },
     initializeRender: function () {
-        this.containerDomElement.style.width = this.universeWidth + 'px';
-        this.containerDomElement.style.height = this.universeHeight + 'px';
-        this.universeDomElement.style.webkitPerspective = this.universeDepth + 'px';
+        throw "No render engine initialized, try loading html5 or canvas Cafi modules.";
     },
     mainLoop: function () {
         var i, j, iModel, jModel, Cafi__models = Cafi.models, Cafi__collisionMatrix = Cafi.colisionMatrix;
@@ -172,244 +189,4 @@ var Cafi = {
     getNearModelsInOctree: function (model) {
         return model._Cafi_currentOctree;
     }
-};
-
-
-// https://github.com/mono/MonoGame/commit/a840f0e5d8b8b91490a8df0b159dea9975ddb2f6
-Array.prototype.v3_reflect = function (normal) {
-    var reflectedVector = [],
-        vector = this,
-        dotProduct = ((vector[0] * normal[0]) + (vector[1] * normal[1])) + (vector[2] * normal[2]);
-    reflectedVector[0] = vector[0] - (2 * normal[0]) * dotProduct;
-    reflectedVector[1] = vector[1] - (2 * normal[1]) * dotProduct;
-    reflectedVector[2] = vector[2] - (2 * normal[2]) * dotProduct;
-    return reflectedVector;
-};
-Array.prototype.v3_getVersor = function () {
-    var vector = this,
-        module = Math.sqrt(vector[0]*vector[0] + vector[1]*vector[1] + vector[2]*vector[2]);
-    return [vector[0]/module, vector[1]/module, vector[2]/module];
-};
-Array.prototype.v3_getModule = function () {
-    var vector = this;
-    return Math.sqrt(vector[0]*vector[0] + vector[1]*vector[1] + vector[2]*vector[2]);
-};
-Array.prototype.v3_getDistance = function (b) {
-    var a = this,
-        ab = b.v3_substract(a);
-    return ab.v3_getModule();
-};
-Array.prototype.v3_substract = function (b) {
-    var a = this;
-    return [a[0]-b[0], a[1]-b[1], a[2]-b[2]];
-};
-Array.prototype.v3_getAngleX = function () {
-    var a = this;
-    return Math.atan2(a[1], a[0])/Cafi.PI*180;
-};
-Array.prototype.v3_getAngleZ = function () {
-    var a = this;
-    return Math.atan2(a[1], a[2])/Cafi.PI*180;
-};
-Array.prototype.v3_getAngleXZ = function () {
-    var a = this;
-    return Math.atan2(a[1], Math.sqrt(a[0]*a[0] + a[2]*a[2]))/Cafi.PI*180;
-};
-Array.prototype.v3_dotProduct = function (value) {
-    var a = this;
-    if (typeof value === 'number') {
-        return [a[0]*value, a[1]*value, a[2]*value];
-    } else {
-        return [a[0]*value[0], a[1]*value[1], a[2]*value[2]];
-    } 
-};
-Array.prototype.v3_product = function (b) {
-    var a = this;
-    return [
-        a[1]*b[2] - b[1]*a[2],
-        -(a[0]*b[2] - b[0]*a[2]),
-        a[0]*b[1] - b[0]*a[1]
-    ];
-};
-Array.prototype.v3_cos = function (b) {
-    var a = this;
-    return a.v3_dotProduct(b)/(a.v3_getModule()*b.v3_getModule());
-};
-
-// @help plane and point operations
-// https://github.com/mono/MonoGame/blob/develop/MonoGame.Framework/Plane.cs
-Array.prototype.v3_classifyPlaneSide = function (plane) {
-    var a = this;
-    return a[0]*plane[0] + a[1]*plane[1] + a[2]*plane[2] + plane[3]; // plane[3] == D
-};
-
-
-/**
- * Cafi Model
- * uses ISU as convention
- * @see http://en.wikipedia.org/wiki/International_System_of_Units
- */
-Cafi.Model = function (options) {
-    // Endo Vars: Status
-    this.mass = options.mass || 1;
-    this.forces = options.forces || [];
-    this.potentialEnergy = options.potentialEnergy || 0;
-    this.cineticEnergy = options.cineticEnergy || 0;
-    this.normal = options.normal || [0, 0, 1];
-    this.velocity = options.velocity || [0, 0, 0];
-    this.position = options.position || [0, 0, 0];
-    this.direction = options.position || [0, 0, 0];
-    this.charge = options.charge || 0;
-
-    // Endo Vars
-    this.acceleration = options.acceleration || [0, 0, 0];
-    this.id = Cafi.models.length;
-
-    this.name = options.name || 'model_' + this.id;
-
-    // register model
-    Cafi.models.push(this);
-
-    this.initializeRender();
-    this.render();
-};
-
-
-/**
- * Cafi Model : Physics
- */
-Cafi.Model.prototype.getResultantForce = function () {
-    var resultantForce = [0, 0, 0],
-        Cafi__models = Cafi.models,
-        G = Cafi.G,
-        K = Cafi.K,
-        modelA = this, modelB, m = this.mass, q = this.charge, dg, de, rg, re, R,
-        i, fe, fg;
-
-    for (i = (Cafi__models || []).length-1; i > -1; --i) {
-        modelB = Cafi__models[i];
-        if (modelB === modelA) {
-            continue;
-        }
-
-        dg = de = modelB.position.v3_substract(modelA.position);
-        if (modelA.charge * modelB.charge > 0) {
-            de = modelA.position.v3_substract(modelB.position);
-        }
-
-        R = dg.v3_getModule();
-        re = de.v3_getVersor();
-        rg = dg.v3_getVersor();
-        fg = (1E12*G*m*modelB.mass)/(R*R +1E3);
-        fe = (K*Math.abs(q*modelB.charge))/(R*R +1E4);
-
-        resultantForce[0] += fg*rg[0] + fe*re[0];
-        resultantForce[1] += fg*rg[1] + fe*re[1];
-        resultantForce[2] += fg*rg[2] + fe*re[2];
-    }
-    return resultantForce;
-};
-
-Cafi.Model.prototype.process = function (skipCollisions) {
-    var dt = Cafi.dT * Cafi.timeScale,
-        p = this.position,
-        p1,
-        v = this.velocity,
-        m = this.mass,
-        f = this.getResultantForce(),
-        a = [f[0]/m, f[1]/m, f[2]/m],
-        ce,
-        pe = m*Cafi.GRAVITY*p[2];
-
-    if ((p[1] + (v[1] + a[1]*dt)*dt)  > 0) { // TODO floor limit --> potential energy
-        a[1] -= Cafi.GRAVITY;
-    }
-
-    this.forces = [];
-    this.velocity = v = [v[0] + a[0]*dt, v[1] + a[1]*dt, v[2] + a[2]*dt];
-    this.position = p1 = [p[0] + v[0]*dt, p[1] + v[1]*dt, p[2] + v[2]*dt];
-    this.direction = p1.v3_substract(p).v3_getVersor();
-    this.potentialEnergy = pe = m*Cafi.GRAVITY*p1[1];
-    this.cineticEnergy = ce = 0.5*m*v[1]*v[1];
-
-    // main container edge collisions
-    if (!skipCollisions) {
-        if (p1[0] < 0) {
-            this.processCollision([1, 0, 0]);
-        }
-        if (p1[0] > Cafi.universeWidth) {
-            this.processCollision([-1, 0, 0]);
-        }
-        if (p1[1] < 0) {
-            this.processCollision([0, 1, 0]);
-        }
-        if (p1[1] > Cafi.universeHeight) {
-            this.processCollision([0, -1, 0]);
-        }
-        if (p1[2] < 0) {
-            this.processCollision([0, 0, 1]);
-        }
-        if (p1[2] > Cafi.universeDepth) {
-            this.processCollision([0, 0, -1]);
-        }
-    }
-};
-
-Cafi.Model.prototype.processCollision = function (normal) {
-    var v1 = this.velocity,
-        v2 = this.velocity.v3_reflect(normal);
-    this.velocity = v1.v3_cos(v2) > 0.987 ? [0, 0, 0] : v2.v3_dotProduct(0.89); // velocity decreases by 11%
-    this.process(true); // re-calculate positioning
-}
-
-Cafi.Model.prototype.initializeRender = function () {
-    var container = Cafi.containerDomElement,   
-        styleSheet = document.styleSheets[0],
-        debugDomElement = document.createElement('div'),
-        debugDomElement_direction = document.createElement('div');
-
-    debugDomElement.id = 'model-' + this.id;
-    debugDomElement.className = 'model';
-    debugDomElement_direction.id = 'model-' + this.id + '-vector-direction-z';
-    debugDomElement_direction.className = 'vector direction';
-    debugDomElement_direction.style.webkitTransformOrigin = '0 0 0';
-    debugDomElement_direction.dataset.label = this.name;
-
-    if (Cafi.enableTransitions) {
-        debugDomElement.style.webkitTransition = 'all ' + Cafi.dT + 'ms linear';
-        //debugDomElement_direction.style.webkitTransition = 'all ' + Cafi.dT + 'ms linear';
-    }
-
-    container.appendChild(debugDomElement);
-    container.appendChild(debugDomElement_direction);
-
-    this.debugDomElement = debugDomElement;
-    this.debugDomElement_direction = debugDomElement_direction;
-};
-
-Cafi.Model.prototype.render = function () {
-    var translate3d = 'translate3d(' + this.position.join('px, ') + 'px)',
-        mScale = this.mass/10,
-        directionVersor = this.direction.v3_getVersor();
-
-    this.debugDomElement.style.webkitTransform = translate3d
-        + ' scale3d(' + mScale + ', ' + mScale + ', ' + mScale +')';
-
-    this.debugDomElement_direction.style.webkitTransform = translate3d 
-        + ' rotate3d(' + directionVersor.v3_product([0,1,0]).v3_getVersor().join(',') + ', ' + (directionVersor.v3_getAngleXZ()-90) + 'deg)';
-
-    if (this.charge) {
-        this.debugDomElement_direction.style.background = (this.charge < 0 ? 'blue' : 'red');
-    }
-};
-
-
-// TODO
-Cafi.Bounding = {
-    Sphere: {
-    },
-    Box: {
-    }, 
-    ConvexHull: {
-    }, 
 };
