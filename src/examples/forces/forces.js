@@ -1,4 +1,4 @@
-Cafi.loadModules(['v3','model', 'bounding', 'html5'], function () {
+Cafi.loadModules(['v3', 'model', 'v3', 'bounding', 'html5'], function () {
 
     var e1 = new Cafi.Model({
         mass: 1, 

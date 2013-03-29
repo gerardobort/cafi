@@ -15,13 +15,18 @@ var Cafi = {
                 scriptElement = document.createElement('script');
             scriptElement.src = '/lib/' + moduleName + '.cafi.js';
             if (i === l-1) {
-                console.log('modules loaded:', moduleNames)
                 scriptElement.onload = function () {
                     callback && callback.apply(this, arguments);
                     Cafi.modules.push(moduleName);
                 };
             }
-            lastScriptElement.parentNode.appendChild(scriptElement);
+            if (!~Cafi.modules.indexOf(moduleName)) {
+                console.log('module loaded: ' + moduleName)
+                lastScriptElement.parentNode.appendChild(scriptElement);
+            } else {
+                console.log('module repeated: ' + moduleName)
+            }
+            Cafi.modules.push(moduleName);
         }
     },
     PI: Math.PI,
