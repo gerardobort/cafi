@@ -20,11 +20,17 @@ Cafi.systemDomElement.appendChild(Cafi.yAxisDomElement);
 Cafi.systemDomElement.appendChild(Cafi.zAxisDomElement);
 Cafi.universeDomElement.appendChild(Cafi.systemDomElement);
 
-// some styling
+// base styling
+Cafi.styleDomElement = document.createElement('link');
+Cafi.styleDomElement.rel = 'stylesheet';
+Cafi.styleDomElement.type = 'text/css';
+Cafi.styleDomElement.href = '/lib/html5.cafi.css';
+document.body.appendChild(Cafi.styleDomElement);
+
+// some dynamic styling
 Cafi.systemDomElement.style.width = Cafi.universeWidth + 'px';
 Cafi.systemDomElement.style.height = Cafi.universeHeight + 'px';
 Cafi.universeDomElement.style.webkitPerspective = Cafi.universeDepth + 'px';
-
 
 
 Cafi.initializeRender = function () {

@@ -1,0 +1,114 @@
+#universe {
+    position: absolute;
+    overflow: hidden;
+    background: black;
+    top: 0;
+    right: 0;
+    bottom: 0;
+    left: 0;
+}
+
+#system {
+    position: absolute;
+    background: rgba(255,255,255,0.01);
+    top: 0;
+    right: 0;
+    bottom: 0;
+    left: 0;
+    border-bottom: 1px solid blue;
+    -webkit-transform-style: preserve-3d;
+    -webkit-transform-origin: 50% 0 -50%;
+    -webkit-transform: translate3d(0px, -100px, -600px) scaleZ(-1) rotate3d(1, 0, 0, 180deg);
+}
+
+#system:after {
+    content: '';
+    position: absolute;
+    background: rgba(255,255,255,0.1);
+    top: 0;
+    right: 0;
+    bottom: 0;
+    left: 0;
+    border: 1px dotted blue;
+    -webkit-transform-origin: 0 0 0;
+    -webkit-transform: rotate3d(1, 0, 0, 90deg);
+}
+
+#system .axis {
+    position: absolute;
+    width: 80px;
+    height: 3px;
+    background: white;
+    -webkit-transform-origin: 0 0 0;
+}
+
+#system .axis.x {
+    background: red;
+    -webkit-transform: rotate3d(0, 0, 0, 0deg);
+}
+
+#system .axis.y {
+    background: green;
+    -webkit-transform: rotate3d(0, 0, 1, 90deg);
+}
+
+#system .axis.z {
+    background: blue;
+    -webkit-transform: rotate3d(0, -1, 0, 90deg);
+}
+
+#system .axis:after {
+    content: attr(data-label);
+    color: white;
+    margin-left: 70px;
+}
+
+.model {
+    position: absolute;
+    width: 60px;
+    height: 60px;
+    margin: -30px 0 0 -30px;
+    border-radius: 100%;
+    !border: 1px solid #0f0;
+    !opacity: 0.9;
+    -webkit-transform-origin: 50% 50% 50%;
+    -webkit-transform-style: preserve-3d;
+}
+
+.vector {
+    position: absolute;
+    width: 1px;
+    height: 40px;
+    background: yellow;
+    z-index: 0;
+    opacity: 1;
+    -webkit-transform-style: preserve-3d;
+}
+
+.vector:before {
+    content: attr(data-label);
+    position: absolute;
+    color: white;
+    margin: 15px 0 0 -8px;
+    font-size: 10px;
+    -webkit-transform: rotate3d(0, 0, 1, -90deg) rotate3d(1, 0, 0, 180deg);
+}
+
+
+.vector:after {
+    content: '';
+    position: absolute;
+    width: 60px;
+    height: 60px;
+    margin: -30px 0 0 -30px;
+    border-radius: 100%;
+    background: white;
+    opacity: 0.1;
+    -webkit-transform-origin: 50% 50% 50%;
+    -webkit-transform: scale3d(0.3, 0.3, 0.3) rotate3d(1, 0, 0, 90deg);
+}
+
+.vector.direction {
+    background: green;
+    border-bottom: 10px solid violet;
+}
