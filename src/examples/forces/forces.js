@@ -1,4 +1,4 @@
-Cafi.loadModules(['v3', 'model', 'v3', 'bounding', 'render-webgl'], function () {
+Cafi.loadModules(['v3', 'm4', 'model', 'bounding', 'render-webgl'], function () {
 
     Cafi.start();
 

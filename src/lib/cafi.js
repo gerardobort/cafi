@@ -54,8 +54,7 @@ var Cafi = {
     universeHeight: window.screen.height,
     universeDepth: window.screen.height,
     mainLoop: function () {
-        var i, j, iModel, jModel, Cafi__models = Cafi.models, Cafi__collisionMatrix = Cafi.colisionMatrix, 
-        Cafi__render__renderModel = Cafi.render.renderModel;
+        var i, j, iModel, jModel, Cafi__models = Cafi.models, Cafi__collisionMatrix = Cafi.colisionMatrix;
 
         Cafi.resetOctree();
         for (i = (Cafi__models || []).length-1; i > -1; --i) {
@@ -78,7 +77,7 @@ var Cafi = {
         Cafi.render.cleanCanvas();
         for (i = (Cafi__models || []).length-1; i > -1; --i) {
             iModel = Cafi__models[i];
-            Cafi__render__renderModel(iModel);
+            Cafi.render.renderModel(iModel);
         }
         
         if ((Cafi.time += Cafi.dT) > Cafi.timeBreakPoint) {

@@ -1,8 +1,16 @@
+// 3d vertex shader
 var vertexShaderSrc = '\n\
-    attribute vec2 aVertexPosition;\n\
+    attribute vec3 aVertexPosition;\n\
+    \n\//attribute vec4 aVertexColor;\n\
     \n\
-    void main() {\n\
-        gl_Position = vec4(aVertexPosition, 0.0, 1.0);\n\
+    uniform mat4 uMVMatrix;\n\
+    uniform mat4 uPMatrix;\n\
+    \n\
+    \n\//varying lowp vec4 vColor;\n\
+    \n\
+    void main(void) {\n\
+        gl_Position = uPMatrix * uMVMatrix * vec4(aVertexPosition, 0.1);\n\
+        \n\//vColor = aVertexColor;\n\
     }\n\
 ';
 
@@ -58,21 +66,21 @@ Cafi.Render = function () {
         gl.shaderSource(fs, fragmentShaderSrc);
         gl.compileShader(fs);
          
-        program = gl.createProgram();
+        var program = this.program = gl.createProgram();
         gl.attachShader(program, vs);
         gl.attachShader(program, fs);
         gl.linkProgram(program);
 
         if (!gl.getShaderParameter(vs, gl.COMPILE_STATUS)) {
-                console.log(gl.getShaderInfoLog(vs));
+            console.log(gl.getShaderInfoLog(vs));
         }
          
         if (!gl.getShaderParameter(fs, gl.COMPILE_STATUS)) {
-                console.log(gl.getShaderInfoLog(fs));
+            console.log(gl.getShaderInfoLog(fs));
         }
 
         if (!gl.getProgramParameter(program, gl.LINK_STATUS)) {
-                console.log(gl.getProgramInfoLog(program));
+            console.log(gl.getProgramInfoLog(program));
         }
 
         this.aspect = this.canvas.width / this.canvas.height;   
@@ -85,53 +93,84 @@ Cafi.Render.prototype.getType = function () {
 
 Cafi.Render.prototype.cleanCanvas = function () {
     var gl = this.gl;
-    //gl.clear(gl.COLOR_BUFFER_BIT|gl.DEPTH_BUFFER_BIT);
-};
+    gl.clear(gl.COLOR_BUFFER_BIT | gl.DEPTH_BUFFER_BIT);
 
-Cafi.Render.prototype.initializeModel = function (model) {
     var gl = this.gl,
-        aspect = this.aspect;
-
-    var vertices = new Float32Array([
-        -0.5, 0.5*aspect, 0.5, 0.5*aspect,  0.5,-0.5*aspect,  // Triangle 1
-        -0.5, 0.5*aspect, 0.5,-0.5*aspect, -0.5,-0.5*aspect   // Triangle 2
-    ]);
+        aspect = this.aspect,
+        program = this.program,
+        vertices = new Float32Array([
+            0, 0, 0,   100, 0, 0,
+            0, 0, 0,   0, 100, 0,
+            0, 0, 0,   0, 0, 100,
+        ]);
      
     vbuffer = gl.createBuffer();
     gl.bindBuffer(gl.ARRAY_BUFFER, vbuffer);                                       
     gl.bufferData(gl.ARRAY_BUFFER, vertices, gl.STATIC_DRAW);
      
-    itemSize = 2;
+    itemSize = 3;
     numItems = vertices.length / itemSize;
 
     gl.useProgram(program);
      
     program.uColor = gl.getUniformLocation(program, "uColor");
-    gl.uniform4fv(program.uColor, [0.0, 0.3, 0.0, 1.0]);
+    gl.uniform4fv(program.uColor, [1.0, 0.0, 0.0, 1.0]);
+
+
+    var pUniform = gl.getUniformLocation(program, "uPMatrix");
+    gl.uniformMatrix4fv(pUniform, false, Array.m4_getPerspective(45, this.aspect, -5, 300.0).m4_toFloat32Array());
+
+    var mvUniform = gl.getUniformLocation(program, "uMVMatrix");
+    gl.uniformMatrix4fv(mvUniform, false, Array.m4_getRotation(90, [0, 1, 0]).m4_toFloat32Array());
+
+
      
     program.aVertexPosition = gl.getAttribLocation(program, "aVertexPosition");
     gl.enableVertexAttribArray(program.aVertexPosition);
     gl.vertexAttribPointer(program.aVertexPosition, itemSize, gl.FLOAT, false, 0, 0)
 
-    gl.drawArrays(gl.TRIANGLES, 0, numItems);
+    gl.drawArrays(gl.LINES, 0, numItems);
+
+};
+
+Cafi.Render.prototype.initializeModel = function (model) {
 };
 
 Cafi.Render.prototype.renderModel = function (model) {
-/*
-    var translate3d = 'translate3d(' + model.position.join('px, ') + 'px)',
-        mScale = model.mass/10,
-        directionVersor = model.direction.v3_getVersor();
+    var gl = this.gl,
+        aspect = this.aspect,
+        program = this.program,
+        p = model.position,
+        d = model.direction.v3_dotProduct(100),
+        vertices = new Float32Array([
+            p[0], p[1], p[2],
+            (p[0]+d[0]), (p[1]+d[1]), (p[2]+d[2])
+        ]);
+     
+    vbuffer = gl.createBuffer();
+    gl.bindBuffer(gl.ARRAY_BUFFER, vbuffer);                                       
+    gl.bufferData(gl.ARRAY_BUFFER, vertices, gl.STATIC_DRAW);
+     
+    itemSize = 3;
+    numItems = vertices.length / itemSize;
 
-    model.debugDomElement.style.webkitTransform = translate3d
-        + ' scale3d(' + mScale + ', ' + mScale + ', ' + mScale +')';
-
-    model.debugDomElement_direction.style.webkitTransform = translate3d 
-        + ' rotate3d(' + directionVersor.v3_product([0,1,0]).v3_getVersor().join(',') + ', ' + (directionVersor.v3_getAngleXZ()-90) + 'deg)';
-
-    if (model.charge) {
-        model.debugDomElement_direction.style.background = (model.charge < 0 ? 'blue' : 'red');
+    gl.useProgram(program);
+     
+    program.uColor = gl.getUniformLocation(program, "uColor");
+    if (!model.charge) {
+        gl.uniform4fv(program.uColor, [0, 1, 0, 1]);
+    } else if (model.charge < 0) {
+        gl.uniform4fv(program.uColor, [0, 0, 1, 1]);
+    } else if (model.charge > 0) {
+        gl.uniform4fv(program.uColor, [1, 0, 0, 1]);
     }
-*/
+     
+    program.aVertexPosition = gl.getAttribLocation(program, "aVertexPosition");
+    gl.enableVertexAttribArray(program.aVertexPosition);
+    gl.vertexAttribPointer(program.aVertexPosition, itemSize, gl.FLOAT, false, 0, 0)
+
+    gl.drawArrays(gl.LINES, 0, numItems);
+
 };
 
 Cafi.render = new Cafi.Render();
