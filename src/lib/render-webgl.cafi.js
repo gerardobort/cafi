@@ -31,7 +31,7 @@ Cafi.Render = function () {
     this.styleDomElement = document.createElement('link');
     this.styleDomElement.rel = 'stylesheet';
     this.styleDomElement.type = 'text/css';
-    this.styleDomElement.href = '/lib/render-canvas.cafi.css';
+    this.styleDomElement.href = '/lib/render-webgl.cafi.css';
     document.body.appendChild(this.styleDomElement);
 
     try {
@@ -80,7 +80,7 @@ Cafi.Render = function () {
 };
 
 Cafi.Render.prototype.getType = function () {
-    return 'canvas';
+    return 'webgl';
 };
 
 Cafi.Render.prototype.cleanCanvas = function () {
