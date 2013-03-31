@@ -53,19 +53,9 @@ var Cafi = {
     universeWidth: window.screen.width,
     universeHeight: window.screen.height,
     universeDepth: window.screen.height,
-    initialize: function () {
-        var i, iModel, Cafi__models = Cafi.models;
-        this.initializeRender();
-        for (i = (Cafi__models || []).length-1; i > -1; --i) {
-            iModel = Cafi__models[i];
-            // ..
-        }
-    },
-    initializeRender: function () {
-        throw "No render engine initialized, try loading html5 or canvas Cafi modules.";
-    },
     mainLoop: function () {
-        var i, j, iModel, jModel, Cafi__models = Cafi.models, Cafi__collisionMatrix = Cafi.colisionMatrix;
+        var i, j, iModel, jModel, Cafi__models = Cafi.models, Cafi__collisionMatrix = Cafi.colisionMatrix, 
+        Cafi__render__renderModel = Cafi.render.renderModel;
 
         Cafi.resetOctree();
         for (i = (Cafi__models || []).length-1; i > -1; --i) {
@@ -85,9 +75,10 @@ var Cafi = {
             }
         }
 
+        Cafi.render.cleanCanvas();
         for (i = (Cafi__models || []).length-1; i > -1; --i) {
             iModel = Cafi__models[i];
-            iModel.render();
+            Cafi__render__renderModel(iModel);
         }
         
         if ((Cafi.time += Cafi.dT) > Cafi.timeBreakPoint) {
@@ -95,10 +86,8 @@ var Cafi = {
             console.log('finished');
         }
     },
-    run: function () {
+    start: function () {
         var started = true;
-
-        this.initialize();
         console.log('start')
         this.timer = setInterval(this.mainLoop, Cafi.dT);
         window.onkeydown = function (e) {

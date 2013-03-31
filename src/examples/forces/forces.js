@@ -1,4 +1,6 @@
-Cafi.loadModules(['v3', 'model', 'v3', 'bounding', 'html5'], function () {
+Cafi.loadModules(['v3', 'model', 'v3', 'bounding', 'render-html5'], function () {
+
+    Cafi.start();
 
     var e1 = new Cafi.Model({
         mass: 1, 
@@ -49,8 +51,5 @@ Cafi.loadModules(['v3', 'model', 'v3', 'bounding', 'html5'], function () {
             + ' rotateY(' + ((360/window.innerWidth)*e.clientX*0.5 +270) + 'deg)'
             + ' rotateX(' + ((360/window.innerHeight)*-e.clientY*0.5 -100) + 'deg)';
     };
-
-
-    Cafi.run();
 
 });

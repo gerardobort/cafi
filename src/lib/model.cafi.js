@@ -24,8 +24,7 @@ Cafi.Model = function (options) {
     // register model
     Cafi.models.push(this);
 
-    this.initializeRender();
-    this.render();
+    Cafi.render.initializeModel(this);
 };
 
 
