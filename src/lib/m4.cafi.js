@@ -8,9 +8,18 @@ Array.m4_getIdentity = function (v3) {
 }
 Array.m4_getTranslation = function (v3) {
     return [
-        1, 0, 0, v3[0],
-        0, 1, 0, v3[1],
-        0, 0, 1, v3[2],
+        1, 0, 0, 0,
+        0, 1, 0, 0,
+        0, 0, 1, 0,
+        v3[0], v3[1], v3[2], 1 // they go inverted!
+    ];
+};
+
+Array.m4_getScale = function (v3) {
+    return [
+        v3[0], 0, 0, 0,
+        0, v3[1], 0, 0,
+        0, 0, v3[2], 0,
         0, 0, 0, 1
     ];
 };

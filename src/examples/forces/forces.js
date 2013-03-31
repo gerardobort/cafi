@@ -51,6 +51,11 @@ Cafi.loadModules(['v3', 'm4', 'model', 'bounding', 'render-webgl'], function () 
                 + ' rotateY(' + ((360/window.innerWidth)*e.clientX*0.5 +270) + 'deg)'
                 + ' rotateX(' + ((360/window.innerHeight)*-e.clientY*0.5 -100) + 'deg)';
         };
+    } else if ('webgl' === Cafi.render.getType()) {
+        document.onmousemove = function (e) {
+            Cafi.render.rotateY = (360/window.innerWidth)*e.clientX*0.5 +270;
+            Cafi.render.rotateX = (360/window.innerHeight)*-e.clientY*0.5 +100;
+        };
     }
 
 });
