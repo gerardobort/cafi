@@ -3,7 +3,6 @@
  */
 Cafi.Render = function () {
     this.universeDomElement = document.getElementById(Cafi.containerId);
-console.log(this.universeDomElement)
 
     // reference system
     this.systemDomElement = document.createElement('div');

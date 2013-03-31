@@ -1,4 +1,4 @@
-Cafi.loadModules(['v3', 'model', 'v3', 'bounding', 'render-html5'], function () {
+Cafi.loadModules(['v3', 'model', 'v3', 'bounding', 'render-canvas'], function () {
 
     Cafi.start();
 
