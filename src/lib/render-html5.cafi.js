@@ -2,39 +2,46 @@
  * Cafi HTML5 Render
  */
 Cafi.Render = function () {
+    this.universeDomElement = document.getElementById(Cafi.containerId);
+console.log(this.universeDomElement)
+
     // reference system
-    Cafi.systemDomElement = document.createElement('div');
-    Cafi.systemDomElement.id = 'system';
+    this.systemDomElement = document.createElement('div');
+    this.systemDomElement.id = 'system';
 
     // X axis
-    Cafi.xAxisDomElement = document.createElement('div');
-    Cafi.xAxisDomElement.className = 'axis x';
+    this.xAxisDomElement = document.createElement('div');
+    this.xAxisDomElement.className = 'axis x';
 
     // Y axis
-    Cafi.yAxisDomElement = document.createElement('div');
-    Cafi.yAxisDomElement.className = 'axis y';
+    this.yAxisDomElement = document.createElement('div');
+    this.yAxisDomElement.className = 'axis y';
 
     // Z axis
-    Cafi.zAxisDomElement = document.createElement('div');
-    Cafi.zAxisDomElement.className = 'axis z';
+    this.zAxisDomElement = document.createElement('div');
+    this.zAxisDomElement.className = 'axis z';
 
     // compose tree structure
-    Cafi.systemDomElement.appendChild(Cafi.xAxisDomElement);
-    Cafi.systemDomElement.appendChild(Cafi.yAxisDomElement);
-    Cafi.systemDomElement.appendChild(Cafi.zAxisDomElement);
-    Cafi.universeDomElement.appendChild(Cafi.systemDomElement);
+    this.systemDomElement.appendChild(this.xAxisDomElement);
+    this.systemDomElement.appendChild(this.yAxisDomElement);
+    this.systemDomElement.appendChild(this.zAxisDomElement);
+    this.universeDomElement.appendChild(this.systemDomElement);
 
     // base styling
-    Cafi.styleDomElement = document.createElement('link');
-    Cafi.styleDomElement.rel = 'stylesheet';
-    Cafi.styleDomElement.type = 'text/css';
-    Cafi.styleDomElement.href = '/lib/render-html5.cafi.css';
-    document.body.appendChild(Cafi.styleDomElement);
+    this.styleDomElement = document.createElement('link');
+    this.styleDomElement.rel = 'stylesheet';
+    this.styleDomElement.type = 'text/css';
+    this.styleDomElement.href = '/lib/render-html5.cafi.css';
+    document.body.appendChild(this.styleDomElement);
 
     // some dynamic styling
-    Cafi.systemDomElement.style.width = Cafi.universeWidth + 'px';
-    Cafi.systemDomElement.style.height = Cafi.universeHeight + 'px';
-    Cafi.universeDomElement.style.webkitPerspective = Cafi.universeDepth + 'px';
+    this.systemDomElement.style.width = Cafi.universeWidth + 'px';
+    this.systemDomElement.style.height = Cafi.universeHeight + 'px';
+    this.universeDomElement.style.webkitPerspective = Cafi.universeDepth + 'px';
+};
+
+Cafi.Render.prototype.getType = function () {
+    return 'html5';
 };
 
 Cafi.Render.prototype.cleanCanvas = function () {
@@ -42,7 +49,7 @@ Cafi.Render.prototype.cleanCanvas = function () {
 };
 
 Cafi.Render.prototype.initializeModel = function (model) {
-    var system = Cafi.systemDomElement,   
+    var system = this.systemDomElement,   
         debugDomElement = document.createElement('div'),
         debugDomElement_direction = document.createElement('div');
 

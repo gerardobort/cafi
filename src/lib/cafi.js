@@ -44,7 +44,7 @@ var Cafi = {
     collisionThreshold: 7,
     timeBreakPoint: 5*60*1000,
     timeScale: 0.003,
-    universeDomElement: document.getElementById('universe'),
+    containerId: 'universe',
     models: [],
     colisionMatrix: [], // upper triangular matrix
     tiemr: null,
