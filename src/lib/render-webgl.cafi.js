@@ -112,10 +112,12 @@ Cafi.Render.prototype.cleanCanvas = function () {
     gl.uniformMatrix4fv(rotationXUniform, false, Array.m4_getRotation(this.rotateX||0, [1, 0, 0]).m4_toFloat32Array());
 
     var scaleUniform = gl.getUniformLocation(program, "uScaleMatrix");
-    gl.uniformMatrix4fv(scaleUniform, false, Array.m4_getScale([1, 1, -1]).m4_toFloat32Array());
+    gl.uniformMatrix4fv(scaleUniform, false, Array.m4_getScale([1, 1, 1]).m4_toFloat32Array());
 
     var perspectiveUniform = gl.getUniformLocation(program, "uPerspectiveMatrix");
-    gl.uniformMatrix4fv(perspectiveUniform, false, Array.m4_getPerspective(30, 1, -10, 20).m4_toFloat32Array());
+    //gl.uniformMatrix4fv(perspectiveUniform, false, Array.m4_getPerspective(45, 1, -2, 2).m4_toFloat32Array());
+    gl.uniformMatrix4fv(perspectiveUniform, false, Array.m4_getOrtho(-2, 2, -2, 2, -2, 2).m4_toFloat32Array());
+    //gl.uniformMatrix4fv(perspectiveUniform, false, Array.m4_getIdentity().m4_toFloat32Array());
 
 
     // render axis versors
@@ -133,7 +135,7 @@ Cafi.Render.prototype.cleanCanvas = function () {
     numItems = vertices.length / itemSize;
      
     program.uColor = gl.getUniformLocation(program, "uColor");
-    gl.uniform4fv(program.uColor, [1, 1, 0, 1]);
+    gl.uniform4fv(program.uColor, [0, 0, 1, 1]);
 
     program.aVertexPosition = gl.getAttribLocation(program, "aVertexPosition");
     gl.enableVertexAttribArray(program.aVertexPosition);
@@ -144,6 +146,7 @@ Cafi.Render.prototype.cleanCanvas = function () {
 
 
     // render floor
+    /*
     var vertices = new Float32Array([
         0, 0, 1,   0, 0, 0,   1, 0, 0,
         0, 0, 1,   1, 0, 1,   1, 0, 0
@@ -157,13 +160,15 @@ Cafi.Render.prototype.cleanCanvas = function () {
     numItems = vertices.length / itemSize;
      
     program.uColor = gl.getUniformLocation(program, "uColor");
-    gl.uniform4fv(program.uColor, [1, 1, 1, 0.1]);
+    gl.uniform4fv(program.uColor, [0.05, 0.05, 0.05, 1]);
 
     program.aVertexPosition = gl.getAttribLocation(program, "aVertexPosition");
     gl.enableVertexAttribArray(program.aVertexPosition);
     gl.vertexAttribPointer(program.aVertexPosition, itemSize, gl.FLOAT, false, 0, 0)
 
+
     gl.drawArrays(gl.TRIANGLES, 0, numItems);
+    */
 };
 
 Cafi.Render.prototype.initializeModel = function (model) {
@@ -174,10 +179,13 @@ Cafi.Render.prototype.renderModel = function (model) {
         aspect = this.aspect,
         program = this.program,
         p = model.position.v3_dotProduct(aspect),
-        d = model.direction.v3_dotProduct(aspect*20),
+        r = model.direction.v3_dotProduct(aspect*30),
+        w = Cafi.universeWidth,
+        h = Cafi.universeWidth,
+        d = Cafi.universeWidth,
         vertices = new Float32Array([
-            p[0], p[1], p[2],
-            (p[0]+d[0]), (p[1]+d[1]), (p[2]+d[2])
+            p[0]/w, p[1]/h, p[2]/d,
+            (p[0]+r[0])/w, (p[1]+r[1])/h, (p[2]+r[2])/d
         ]);
      
     vbuffer = gl.createBuffer();
