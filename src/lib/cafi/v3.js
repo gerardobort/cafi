@@ -1,4 +1,4 @@
-define([], function () {
+define('cafi/v3', ['cafi'], function (Cafi) {
 
     // https://github.com/mono/MonoGame/commit/a840f0e5d8b8b91490a8df0b159dea9975ddb2f6
     Array.prototype.v3_reflect = function (normal) {

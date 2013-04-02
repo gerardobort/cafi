@@ -1,4 +1,4 @@
-define(['cafi/v3'], function (V3) {
+define('cafi/m4', ['cafi/v3'], function (V3) {
 
     Array.m4_getIdentity = function (v3) {
         return [

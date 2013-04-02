@@ -1,8 +1,7 @@
-define(['cafi/v3', 'cafi/m4'], function (V3, M4) {
+define('cafi/bounding', ['cafi', 'cafi/v3', 'cafi/m4'], function (Cafi, V3, M4) {
 
-    var Bounding;
 
-    Bounding = {
+    Cafi.Bounding = {
         Sphere: {
         },
         Box: {
@@ -11,6 +10,6 @@ define(['cafi/v3', 'cafi/m4'], function (V3, M4) {
         }, 
     };
 
-    return Bounding;
+    return Cafi.Bounding;
 
 });

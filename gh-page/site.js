@@ -1,4 +1,14 @@
-require(['/src/lib/cafi.js'], function () {
+require.config({
+    baseUrl: "/src/lib",
+    map:{
+        '*': {
+            shader: '/src/build/require-text/text',
+            css: '/src/build/require-css/css',
+        }
+    }
+});
+
+require(['cafi', 'cafi/model', 'cafi/render/webgl'], function (Cafi, CafiModel, CafiRender) {
 
     Cafi.start();
 

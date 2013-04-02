@@ -1,4 +1,4 @@
-define(['cafi/v3', 'cafi/m4', 'cafi/model'], function (V3, M4, Model) {
+define('cafi', [], function () {
 
     var Cafi;
 

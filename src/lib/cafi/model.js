@@ -1,13 +1,11 @@
-define(['cafi/v3'], function (V3) {
-
-    var Model;
+define('cafi/model', ['cafi', 'cafi/v3'], function (Cafi, V3) {
 
     /**
      * Cafi Model
      * uses ISU as convention
      * @see http://en.wikipedia.org/wiki/International_System_of_Units
      */
-    Model = function (options) {
+    Cafi.Model = function (options) {
         // Endo Vars: Status
         this.mass = options.mass || 1;
         this.forces = options.forces || [];
@@ -35,7 +33,7 @@ define(['cafi/v3'], function (V3) {
     /**
      * Cafi Model : Physics
      */
-    Model.prototype.getResultantForce = function () {
+    Cafi.Model.prototype.getResultantForce = function () {
         var resultantForce = [0, 0, 0],
             Cafi__models = Cafi.models,
             G = Cafi.G,
@@ -67,7 +65,7 @@ define(['cafi/v3'], function (V3) {
         return resultantForce;
     };
 
-    Model.prototype.process = function (skipCollisions) {
+    Cafi.Model.prototype.process = function (skipCollisions) {
         var dt = Cafi.dT * Cafi.timeScale,
             p = this.position,
             p1,
@@ -112,17 +110,17 @@ define(['cafi/v3'], function (V3) {
         }
     };
 
-    Model.prototype.processCollision = function (normal) {
+    Cafi.Model.prototype.processCollision = function (normal) {
         var v1 = this.velocity,
             v2 = this.velocity.v3_reflect(normal);
         this.velocity = v1.v3_cos(v2) > 0.987 ? [0, 0, 0] : v2.v3_dotProduct(0.89); // velocity decreases by 11%
         this.process(true); // re-calculate positioning
     }
 
-    Model.prototype.initializeRender = function () {
+    Cafi.Model.prototype.initializeRender = function () {
         throw "No render engine initialized, try loading html5 or canvas Cafi modules.";
     };
 
-    return Model;
+    return Cafi.Model;
 
 });
