@@ -5,6 +5,7 @@ require.config({
         '*': {
             shader: pathPrefix + '/src/build/require-text.js',
             css: pathPrefix + '/src/build/require-css.js',
+            normalize: pathPrefix + '/src/build/normalize.js'
         }
     }
 });
