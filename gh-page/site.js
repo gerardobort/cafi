@@ -5,7 +5,7 @@ require.config({
         '*': {
             shader: pathPrefix + '/src/build/require-text.js',
             css: pathPrefix + '/src/build/require-css.js',
-            normalize: pathPrefix + '/src/build/normalize.js'
+            'cafi/src/build/normalize': 'cafi/src/build/normalize.js' // this is only for being hosted on github.com
         }
     }
 });
