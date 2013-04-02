@@ -2,8 +2,8 @@ require.config({
     baseUrl: "/src/lib",
     map:{
         '*': {
-            shader: '/src/build/require-text/text',
-            css: '/src/build/require-css/css',
+            shader: '/src/build/require-text.js',
+            css: '/src/build/require-css.js',
         }
     }
 });
