@@ -1,9 +1,10 @@
+var pathPrefix = document.location.href.match(/github\.com/) ? '/cafi' : '';
 require.config({
-    baseUrl: "/src/lib",
+    baseUrl: pathPrefix + "/src/lib",
     map:{
         '*': {
-            shader: '/src/build/require-text.js',
-            css: '/src/build/require-css.js',
+            shader: pathPrefix + '/src/build/require-text.js',
+            css: pathPrefix + '/src/build/require-css.js',
         }
     }
 });
