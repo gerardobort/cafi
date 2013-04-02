@@ -1,4 +1,4 @@
-Cafi.loadModules(['v3', 'm4', 'model', 'bounding', 'render-webgl'], function () {
+require(['/src/lib/cafi.js'], function () {
 
     Cafi.start();
 
