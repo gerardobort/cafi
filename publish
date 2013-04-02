@@ -1,9 +1,10 @@
 #!/bin/bash
-cp -R . /tmp/cafi-repo\
+cp -Rf . /tmp/cafi-repo\
     && git checkout -f gh-pages\
     && rm -Rf *\
-    && cp -R /tmp/cafi-repo/* .\
-    && git add .\
+    && cp -Rf /tmp/cafi-repo/* .\
+    && find src -name \.git -exec rm -Rf {} \;
+git add .\
     && git commit -am 'updating gh-pages - automatic publish script'\
     && git push origin gh-pages\
     && git checkout -f master\
