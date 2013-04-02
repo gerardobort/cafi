@@ -8,4 +8,4 @@ cp -Rf . /tmp/cafi-repo\
     && git commit -am 'updating gh-pages - automatic publish script'\
     && git push origin gh-pages\
     && git checkout -f master\
-    && echo "Cafi gh-page is now in its latest revision.\n"
+    && echo "Cafi gh-page is now in its latest revision."
