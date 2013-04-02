@@ -3,7 +3,7 @@ cp -Rf . /tmp/cafi-repo\
     && git checkout gh-pages\
     && rm -Rf *\
     && cp -Rf /tmp/cafi-repo/* .\
-    && find src/build/require-* -name \.git -exec rm -Rf {} \+ \
+    && find src/build/require-* -name \.git* -exec rm -Rf {} \+ \
     && git add .\
     && git commit -am 'updating gh-pages - automatic publish script'\
     && git push origin gh-pages\
