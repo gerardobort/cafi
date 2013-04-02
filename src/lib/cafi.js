@@ -1,12 +1,10 @@
 define('cafi', [], function () {
 
-    var Cafi;
-
     /**
      * Cafi is an experimental Physics Engine based on Continuous DeltaT
      * @author gerardobort <gerardobort@gmail.com>
      */
-    Cafi = {
+    window.Cafi = {
         modules: [],
         loadModules: function (moduleNames, callback) {
             if ('string' === typeof moduleNames) {
@@ -188,6 +186,6 @@ define('cafi', [], function () {
         }
     };
 
-    return Cafi;
+    return window.Cafi;
 
 });
