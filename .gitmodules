@@ -1,0 +1,9 @@
+[submodule "src/lib/require-css"]
+	path = src/lib/require-css
+	url = git://github.com/guybedford/require-css
+[submodule "src/lib/require-text"]
+	path = src/lib/require-text
+	url = https://github.com/requirejs/text.git
+[submodule "src/lib/require-js"]
+	path = src/lib/require-js
+	url = git://github.com/jrburke/requirejs.git
