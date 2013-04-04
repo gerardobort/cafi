@@ -26,7 +26,7 @@ define('cafi/model', ['cafi', 'cafi/v3'], function (Cafi, V3) {
         // register model
         Cafi.models.push(this);
 
-        Cafi.render.initializeModel(this);
+        Cafi.renders.initializeModel(this);
     };
 
 
