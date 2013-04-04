@@ -13,6 +13,12 @@ body {
     padding: 20px;
 }
 
+#webgl-canvas-container > *,
+#html5-canvas-container > * {
+    position: relative;
+    width: 100%;
+}
+
 #webgl-canvas-container {
     left: 0;
 }
