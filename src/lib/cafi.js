@@ -5,32 +5,6 @@ define('cafi', [], function () {
      * @author gerardobort <gerardobort@gmail.com>
      */
     window.Cafi = {
-        modules: [],
-        loadModules: function (moduleNames, callback) {
-            if ('string' === typeof moduleNames) {
-                moduleNames = [moduleNames];
-            }
-            var i, l = moduleNames.length;
-            for (i = 0; i < l; i++) {
-                var moduleName = moduleNames[i],
-                    lastScriptElement = document.scripts[document.scripts.length-1],
-                    scriptElement = document.createElement('script');
-                scriptElement.src = '/lib/' + moduleName + '.cafi.js';
-                if (i === l-1) {
-                    scriptElement.onload = function () {
-                        callback && callback.apply(this, arguments);
-                        Cafi.modules.push(moduleName);
-                    };
-                }
-                if (!~Cafi.modules.indexOf(moduleName)) {
-                    console.log('module loaded: ' + moduleName)
-                    lastScriptElement.parentNode.appendChild(scriptElement);
-                } else {
-                    console.log('module repeated: ' + moduleName)
-                }
-                Cafi.modules.push(moduleName);
-            }
-        },
         PI: Math.PI,
         E: Math.E,
         GRAVITY: 9.81,
@@ -46,8 +20,8 @@ define('cafi', [], function () {
         collisionThreshold: 7,
         timeBreakPoint: 5*60*1000,
         timeScale: 0.003,
-        containerId: 'universe',
         models: [],
+        renders: [], // composite array
         colisionMatrix: [], // upper triangular matrix
         tiemr: null,
         octree: [], // multidimentional octree
@@ -76,10 +50,10 @@ define('cafi', [], function () {
                 }
             }
 
-            Cafi.render.cleanCanvas();
+            Cafi.renders.cleanCanvas();
             for (i = (Cafi__models || []).length-1; i > -1; --i) {
                 iModel = Cafi__models[i];
-                Cafi.render.renderModel(iModel);
+                Cafi.renders.renderModel(iModel);
             }
             
             if ((Cafi.time += Cafi.dT) > Cafi.timeBreakPoint) {
@@ -183,6 +157,27 @@ define('cafi', [], function () {
         },
         getNearModelsInOctree: function (model) {
             return model._Cafi_currentOctree;
+        }
+    };
+
+    Cafi.renders.cleanCanvas = function () {
+        var i;
+        for (i = this.length-1; i > -1; --i) {
+            this[i].cleanCanvas.apply(this[i], arguments);
+        }
+    };
+
+    Cafi.renders.renderModel = function () {
+        var i;
+        for (i = this.length-1; i > -1; --i) {
+            this[i].renderModel.apply(this[i], arguments);
+        }
+    };
+
+    Cafi.renders.initializeModel = function () {
+        var i;
+        for (i = this.length-1; i > -1; --i) {
+            this[i].initializeModel.apply(this[i], arguments);
         }
     };
 

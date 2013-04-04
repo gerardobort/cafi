@@ -5,14 +5,23 @@ define('cafi/render/webgl', [
     'css!./webgl.css'
     ], function (Cafi, V3, M4, Model, vertexShaderSrc, fragmentShaderSrc) {
 
+    Cafi.Render = Cafi.Render || {};
+
     /**
      * Cafi WebGL Render
      */
-    Cafi.Render = function () {
+    Cafi.Render.WebGL = function (options) {
         this.universeDomElement = document.getElementById(Cafi.containerId);
         this.canvas = document.createElement('canvas');
         this.canvas.width = Cafi.universeWidth;
         this.canvas.height = Cafi.universeHeight;
+
+        var container = document.getElementById(options.containerId);
+
+        this.universeDomElement = document.createElement('div');
+        this.universeDomElement.id = 'universe';
+        container.appendChild(this.universeDomElement);
+
         this.universeDomElement.appendChild(this.canvas);
 
         // start GL context
@@ -54,13 +63,15 @@ define('cafi/render/webgl', [
         }
 
         this.aspect = this.canvas.width / this.canvas.height;   
+
+        Cafi.renders.push(this);
     };
 
-    Cafi.Render.prototype.getType = function () {
+    Cafi.Render.WebGL.prototype.getType = function () {
         return 'webgl';
     };
 
-    Cafi.Render.prototype.cleanCanvas = function () {
+    Cafi.Render.WebGL.prototype.cleanCanvas = function () {
         var gl = this.gl,
             aspect = this.aspect,
             program = this.program;
@@ -140,10 +151,10 @@ define('cafi/render/webgl', [
         */
     };
 
-    Cafi.Render.prototype.initializeModel = function (model) {
+    Cafi.Render.WebGL.prototype.initializeModel = function (model) {
     };
 
-    Cafi.Render.prototype.renderModel = function (model) {
+    Cafi.Render.WebGL.prototype.renderModel = function (model) {
         var gl = this.gl,
             aspect = this.aspect,
             program = this.program,
@@ -183,8 +194,6 @@ define('cafi/render/webgl', [
 
     };
 
-    Cafi.render = new Cafi.Render();
-
-    return Cafi.Render;
+    return Cafi.Render.WebGL;
 
 });

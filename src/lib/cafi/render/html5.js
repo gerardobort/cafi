@@ -1,10 +1,16 @@
 define('cafi/render/html5', ['cafi', 'cafi/v3', 'cafi/m4', 'cafi/model', 'css!./html5.css'], function (Cafi, V3, M4, Model) {
 
+    Cafi.Render = Cafi.Render || {};
+
     /**
      * Cafi HTML5 Render
      */
-    Cafi.Render = function () {
-        this.universeDomElement = document.getElementById(Cafi.containerId);
+    Cafi.Render.HTML5 = function (options) {
+        var container = document.getElementById(options.containerId);
+
+        this.universeDomElement = document.createElement('div');
+        this.universeDomElement.id = 'universe';
+        container.appendChild(this.universeDomElement);
 
         // reference system
         this.systemDomElement = document.createElement('div');
@@ -32,17 +38,19 @@ define('cafi/render/html5', ['cafi', 'cafi/v3', 'cafi/m4', 'cafi/model', 'css!./
         this.systemDomElement.style.width = Cafi.universeWidth + 'px';
         this.systemDomElement.style.height = Cafi.universeHeight + 'px';
         this.universeDomElement.style.webkitPerspective = Cafi.universeDepth + 'px';
+
+        Cafi.renders.push(this);
     };
 
-    Cafi.Render.prototype.getType = function () {
+    Cafi.Render.HTML5.prototype.getType = function () {
         return 'html5';
     };
 
-    Cafi.Render.prototype.cleanCanvas = function () {
+    Cafi.Render.HTML5.prototype.cleanCanvas = function () {
         
     };
 
-    Cafi.Render.prototype.initializeModel = function (model) {
+    Cafi.Render.HTML5.prototype.initializeModel = function (model) {
         var system = this.systemDomElement,   
             debugDomElement = document.createElement('div'),
             debugDomElement_direction = document.createElement('div');
@@ -66,7 +74,7 @@ define('cafi/render/html5', ['cafi', 'cafi/v3', 'cafi/m4', 'cafi/model', 'css!./
         model.debugDomElement_direction = debugDomElement_direction;
     };
 
-    Cafi.Render.prototype.renderModel = function (model) {
+    Cafi.Render.HTML5.prototype.renderModel = function (model) {
         var translate3d = 'translate3d(' + model.position.join('px, ') + 'px)',
             mScale = model.mass/10,
             directionVersor = model.direction.v3_getVersor();
@@ -82,8 +90,6 @@ define('cafi/render/html5', ['cafi', 'cafi/v3', 'cafi/m4', 'cafi/model', 'css!./
         }
     };
 
-    Cafi.render = new Cafi.Render();
-
-    return Cafi.Render;
+    return Cafi.Render.HTML5;
 
 });

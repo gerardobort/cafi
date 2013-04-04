@@ -1,3 +1,25 @@
+body {
+    background: black;
+}
+
+
+#webgl-canvas-container,
+#html5-canvas-container {
+    position: absolute;
+    width: 50%;
+    top: 0;
+    bottom: 0;
+    background: gray;
+    padding: 20px;
+}
+
+#webgl-canvas-container {
+    left: 0;
+}
+#html5-canvas-container {
+    right: 0;
+}
+
 #model-0 {
     border-color: red;
 }
