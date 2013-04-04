@@ -14,10 +14,10 @@ require([
     ], function (Cafi, CafiModel, CafiHTML5Render, CafiWebGLRender) {
 
 
+    Cafi.start();
+
     new Cafi.Render.HTML5({ containerId: 'html5-canvas-container' });
     new Cafi.Render.WebGL({ containerId: 'webgl-canvas-container' });
-
-    Cafi.start();
 
     var e1 = new Cafi.Model({
         mass: 1, 
@@ -61,19 +61,21 @@ require([
         });
     };
 
-    var renders = [];
+    var renders = Cafi.renders, render;
     for (j = 0; j < renders.length; j++) {
-        if ('html5' === renders[j].getType()) {
-            document.onmousemove = function (e) {
-                renders[j].systemDomElement.style.webkitTransform = 'translate3d(0, -100px, -600px)'
+        render = renders[j];
+        if ('html5' === render.getType()) {
+            var systemDomElement = render.systemDomElement;
+            render.universeDomElement.onmousemove = function (e) {
+                systemDomElement.style.webkitTransform = 'translate3d(0, -100px, -600px)'
                     + ' scaleZ(-1)'
                     + ' rotateY(' + ((360/window.innerWidth)*e.clientX*0.5 +270) + 'deg)'
                     + ' rotateX(' + ((360/window.innerHeight)*-e.clientY*0.5 -100) + 'deg)';
             };
-        } else if ('webgl' === Cafi.render.getType()) {
-            document.onmousemove = function (e) {
-                renders[j].rotateY = (360/window.innerWidth)*e.clientX*0.5 +270;
-                renders[j].rotateX = (360/window.innerHeight)*-e.clientY*0.5 +100;
+        } else if ('webgl' === render.getType()) {
+            render.canvas.onmousemove = function (e) {
+                render.rotateY = (360/window.innerWidth)*e.clientX*0.5 +270;
+                render.rotateX = (360/window.innerHeight)*-e.clientY*0.5 +100;
             };
         }
     }

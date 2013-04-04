@@ -38,22 +38,6 @@ define('cafi/m4', ['cafi/v3'], function (V3) {
             t*x*z+s*y,  t*y*z-s*x,  t*z*z+c,    0,         
             0,          0,          0,          1
         ];
-        /*return [
-            t*x*x+c,   t*x*y-s*z, t*x*z+s*y, 0,
-            t*x*y+s*z, t*y*y+c,   t*y*z-s*x, 0,
-            t*x*z-s*y, t*y*z+s*x, t*z*z+c,   0,
-            0,         0,         0,         1
-        ];*/
-    /*
-    function (b,a){if(!a){return Matrix.create([
-        [Math.cos(b),-Math.sin(b)],
-        [Math.sin(b),Math.cos(b)]
-    ])}var d=a.dup();if(d.elements.length!=3){return null}var e=d.modulus();var x=d.elements[0]/e,y=d.elements[1]/e,z=d.elements[2]/e;var s=Math.sin(b),c=Math.cos(b),t=1-c;return Matrix.create([
-        [t*x*x+c,t*x*y-s*z,t*x*z+s*y],
-        [t*x*y+s*z,t*y*y+c,t*y*z-s*x],
-        [t*x*z-s*y,t*y*z+s*x,t*z*z+c]
-    ])}
-    */
     };
 
     Array.m4_getPerspective = function (fovy, aspect, znear, zfar) {

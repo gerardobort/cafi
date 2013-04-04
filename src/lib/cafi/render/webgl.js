@@ -83,7 +83,7 @@ define('cafi/render/webgl', [
 
         // apply global transformations
         var translationUniform = gl.getUniformLocation(program, "uTranslationMatrix");
-        gl.uniformMatrix4fv(translationUniform, false, Array.m4_getTranslation([-0.5, -0.2, 0]).m4_toFloat32Array());
+        gl.uniformMatrix4fv(translationUniform, false, Array.m4_getTranslation([-0.8, -0.2, 0]).m4_toFloat32Array());
 
         var rotationYUniform = gl.getUniformLocation(program, "uRotationYMatrix");
         gl.uniformMatrix4fv(rotationYUniform, false, Array.m4_getRotation(this.rotateY||0, [0, 1, 0]).m4_toFloat32Array());
