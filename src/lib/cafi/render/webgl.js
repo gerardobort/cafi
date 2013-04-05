@@ -64,6 +64,9 @@ define('cafi/render/webgl', [
 
         this.aspect = this.canvas.width / this.canvas.height;   
 
+        this.rotateX = 0;
+        this.rotateY = 0;
+
         Cafi.renders.push(this);
     };
 

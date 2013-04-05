@@ -50,34 +50,42 @@ require([
     });
 
 
-    var i = 2, j;
-    document.onmousedown = function (e) {
-        var px = new Cafi.Model({
-            mass: 1,
-            charge: 1E-2 * (i++%2 ? 1 : -1),
-            position: [e.clientX, e.clientY, 400],
-            velocity: [parseInt(Math.random()*50*(e.clientX > window.innerWidth/2 ? -1 : 1), 10), parseInt(Math.random()*100, 10), -20],
-            name: ''
-        });
-    };
+    var renders = Cafi.renders, moving = false, xi = 0, yi = 0, xf = 0, yf = 0,
+        i = 2, j;
 
-    var renders = Cafi.renders, render;
-    for (j = 0; j < renders.length; j++) {
-        render = renders[j];
-        if ('html5' === render.getType()) {
-            var systemDomElement = render.systemDomElement;
-            render.universeDomElement.onmousemove = function (e) {
-                systemDomElement.style.webkitTransform = 'translate3d(0, -100px, -600px)'
-                    + ' scaleZ(-1)'
-                    + ' rotateY(' + ((360/window.innerWidth)*e.clientX*0.5 +270) + 'deg)'
-                    + ' rotateX(' + ((360/window.innerHeight)*-e.clientY*0.5 -100) + 'deg)';
-            };
-        } else if ('webgl' === render.getType()) {
-            render.canvas.onmousemove = function (e) {
-                render.rotateY = (360/window.innerWidth)*e.clientX*0.5 +270;
-                render.rotateX = (360/window.innerHeight)*-e.clientY*0.5 +100;
-            };
+    document.oncontextmenu = function (e) {
+        e.preventDefault();
+    };
+    document.onmousedown = function (e) {
+        if (2 === e.button) {
+            moving = true;
         }
-    }
+    };
+    document.onmouseup = function (e) {
+        moving = false;
+    };
+    document.onmousemove = function (e) {
+        xf = e.clientX;
+        yf = e.clientY;
+        if (moving) {
+            for (j = 0; j < renders.length; j++) {
+                renders[j].rotateX += (yf-yi)*-0.5;
+                renders[j].rotateY += (xf-xi)*-0.5;
+            }
+        }
+        xi = e.clientX;
+        yi = e.clientY;
+    };
+    document.onclick = function (e) {
+        if (0 === e.button) {
+            new Cafi.Model({
+                mass: 1,
+                charge: 1E-2 * (i++%2 ? 1 : -1),
+                position: [e.clientX, e.clientY, 400],
+                velocity: [parseInt(Math.random()*50*(e.clientX > window.innerWidth/2 ? -1 : 1), 10), parseInt(Math.random()*100, 10), -20],
+                name: ''
+            });
+        }
+    };
 
 });

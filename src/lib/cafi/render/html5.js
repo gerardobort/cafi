@@ -8,9 +8,9 @@ define('cafi/render/html5', ['cafi', 'cafi/v3', 'cafi/m4', 'cafi/model', 'css!./
     Cafi.Render.HTML5 = function (options) {
         var container = document.getElementById(options.containerId);
 
-        this.universeDomElement = document.createElement('div');
-        this.universeDomElement.id = 'universe';
-        container.appendChild(this.universeDomElement);
+        this.canvas = document.createElement('div');
+        this.canvas.id = 'universe';
+        container.appendChild(this.canvas);
 
         // reference system
         this.systemDomElement = document.createElement('div');
@@ -32,12 +32,15 @@ define('cafi/render/html5', ['cafi', 'cafi/v3', 'cafi/m4', 'cafi/model', 'css!./
         this.systemDomElement.appendChild(this.xAxisDomElement);
         this.systemDomElement.appendChild(this.yAxisDomElement);
         this.systemDomElement.appendChild(this.zAxisDomElement);
-        this.universeDomElement.appendChild(this.systemDomElement);
+        this.canvas.appendChild(this.systemDomElement);
 
         // some dynamic styling
         this.systemDomElement.style.width = Cafi.universeWidth + 'px';
         this.systemDomElement.style.height = Cafi.universeHeight + 'px';
-        this.universeDomElement.style.webkitPerspective = Cafi.universeDepth + 'px';
+        this.canvas.style.webkitPerspective = Cafi.universeDepth + 'px';
+
+        this.rotateX = 180;
+        this.rotateY = 0;
 
         Cafi.renders.push(this);
     };
@@ -47,7 +50,10 @@ define('cafi/render/html5', ['cafi', 'cafi/v3', 'cafi/m4', 'cafi/model', 'css!./
     };
 
     Cafi.Render.HTML5.prototype.cleanCanvas = function () {
-        
+        this.systemDomElement.style.webkitTransform = 'translate3d(0, -100px, -600px)'
+            + ' scaleZ(-1)'
+            + ' rotateY(' + (this.rotateY) + 'deg)'
+            + ' rotateX(' + (-this.rotateX) + 'deg)';
     };
 
     Cafi.Render.HTML5.prototype.initializeModel = function (model) {
