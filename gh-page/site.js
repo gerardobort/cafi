@@ -69,8 +69,8 @@ require([
         yf = e.clientY;
         if (moving) {
             for (j = 0; j < renders.length; j++) {
-                renders[j].rotateX += (yf-yi)*-0.5;
-                renders[j].rotateY += (xf-xi)*-0.5;
+                renders[j].rotateX += (yf-yi)*-0.1;
+                renders[j].rotateY += (xf-xi)*-0.1;
             }
         }
         xi = e.clientX;
