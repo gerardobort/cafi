@@ -1,4 +1,4 @@
-var pathPrefix = document.location.href.match(/github\.com/) ? '/cafi' : '';
+var pathPrefix = document.location.href.match(/github\.(io|com)/) ? '/cafi' : '';
 require.config({
     baseUrl: pathPrefix + "/src/lib",
     map:{
