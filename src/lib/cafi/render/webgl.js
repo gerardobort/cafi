@@ -105,6 +105,7 @@ define('cafi/render/webgl', [
         var perspectiveUniform = gl.getUniformLocation(program, "uPerspectiveMatrix");
         //gl.uniformMatrix4fv(perspectiveUniform, false, Array.m4_getPerspective(45, 1, -2, 2).m4_toFloat32Array());
         //gl.uniformMatrix4fv(perspectiveUniform, false, Array.m4_getIdentity().m4_toFloat32Array());
+        //gl.uniformMatrix4fv(perspectiveUniform, false, Array.m4_getLookAt([0, 0, 1], [0,0,0], [0,100,0]).m4_toFloat32Array());
         gl.uniformMatrix4fv(perspectiveUniform, false, Array.m4_getOrtho(-sqrt2, sqrt2, -sqrt2, sqrt2, -sqrt2, sqrt2).m4_toFloat32Array());
 
         var vertices, w = Cafi.universeWidth, h = Cafi.universeHeight, d = Cafi.universeDepth;

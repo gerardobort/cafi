@@ -48,7 +48,7 @@ define('cafi/v3', ['cafi'], function (Cafi) {
             return [a[0]*value[0], a[1]*value[1], a[2]*value[2]];
         } 
     };
-    Array.prototype.v3_product = function (b) {
+    Array.prototype.v3_product = function (b) { // same as Vector::cross
         var a = this;
         return [
             a[1]*b[2] - b[1]*a[2],
