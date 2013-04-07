@@ -35,6 +35,7 @@ define('cafi/render/html5', ['cafi', 'cafi/v3', 'cafi/m4', 'cafi/model', 'css!./
         this.canvas.appendChild(this.systemDomElement);
 
         // some dynamic styling
+        this.canvas.style.zoom = options.scale||1;
         this.systemDomElement.style.width = Cafi.universeWidth + 'px';
         this.systemDomElement.style.height = Cafi.universeHeight + 'px';
         this.canvas.style.webkitPerspective = Cafi.universeDepth + 'px';
@@ -50,7 +51,8 @@ define('cafi/render/html5', ['cafi', 'cafi/v3', 'cafi/m4', 'cafi/model', 'css!./
     };
 
     Cafi.Render.HTML5.prototype.cleanCanvas = function () {
-        this.systemDomElement.style.webkitTransform = 'translate3d(0, -100px, -600px)'
+        this.systemDomElement.style.webkitTransformOrigin = '0 0 0';
+        this.systemDomElement.style.webkitTransform = 'translate3d(0, ' + Cafi.universeHeight + 'px, -' + Cafi.universeDepth + 'px)'
             + ' scaleZ(-1)'
             + ' rotateY(' + (this.rotateY) + 'deg)'
             + ' rotateX(' + (-this.rotateX) + 'deg)';

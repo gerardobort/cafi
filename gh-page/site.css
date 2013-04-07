@@ -3,13 +3,55 @@ body {
 }
 
 
-#webgl-canvas-container,
+#webgl-canvas-container {
+    position: absolute;
+    width: 100%;
+    top: 0;
+    bottom: 0;
+    background: gray;
+}
+
 #html5-canvas-container {
     position: absolute;
     width: 50%;
     top: 0;
-    bottom: 0;
-    background: gray;
+    bottom: 50%;
+    background: transparent;
+}
+#html5-canvas-container #universe {
+    background: transparent;
+}
+
+#webgl-canvas-container:after,
+#html5-canvas-container:after {
+    position: absolute;
+    top: 0;
+    left: 0;
+    color: black;
+    background: green;
+    padding: 0.5em 1em;
+    font-family: monospace;
+}
+
+#webgl-canvas-container,
+#html5-canvas-container {
+    border: 1px dotted green;
+}
+
+#webgl-canvas-container:hover,
+#html5-canvas-container:hover {
+}
+
+#webgl-canvas-container:hover:after,
+#html5-canvas-container:hover:after {
+}
+
+#webgl-canvas-container:after {
+    content: 'WebgGL Render';
+}
+
+#html5-canvas-container:after {
+    content: 'HTML5 Render';
 }
 
 #webgl-canvas-container > *,

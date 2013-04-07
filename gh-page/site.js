@@ -16,8 +16,8 @@ require([
 
     Cafi.start();
 
-    new Cafi.Render.HTML5({ containerId: 'html5-canvas-container' });
-    new Cafi.Render.WebGL({ containerId: 'webgl-canvas-container' });
+    new Cafi.Render.HTML5({ containerId: 'html5-canvas-container', scale: 0.5 });
+    new Cafi.Render.WebGL({ containerId: 'webgl-canvas-container', scale: 1 });
 
     var e1 = new Cafi.Model({
         mass: 1, 

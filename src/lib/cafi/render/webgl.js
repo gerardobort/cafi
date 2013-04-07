@@ -63,6 +63,7 @@ define('cafi/render/webgl', [
         }
 
         this.aspect = this.canvas.width / this.canvas.height;   
+        this.scale = options.scale||1;
 
         this.rotateX = 0;
         this.rotateY = 0;
@@ -95,7 +96,7 @@ define('cafi/render/webgl', [
         gl.uniformMatrix4fv(rotationXUniform, false, Array.m4_getRotation(this.rotateX||0, [1, 0, 0]).m4_toFloat32Array());
 
         var scaleUniform = gl.getUniformLocation(program, "uScaleMatrix");
-        gl.uniformMatrix4fv(scaleUniform, false, Array.m4_getScale([1, 1, 1]).m4_toFloat32Array());
+        gl.uniformMatrix4fv(scaleUniform, false, Array.m4_getScale([this.scale, this.scale, this.scale]).m4_toFloat32Array());
 
         var perspectiveUniform = gl.getUniformLocation(program, "uPerspectiveMatrix");
         //gl.uniformMatrix4fv(perspectiveUniform, false, Array.m4_getPerspective(45, 1, -2, 2).m4_toFloat32Array());
