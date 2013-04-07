@@ -128,7 +128,7 @@ define('cafi/render/webgl', [
         numItems = vertices.length / itemSize;
          
         program.uColor = gl.getUniformLocation(program, "uColor");
-        gl.uniform4fv(program.uColor, [0.2, 0, 0.2, 1]);
+        gl.uniform4fv(program.uColor, [0, 0, 0.3, 1]);
 
         program.aVertexPosition = gl.getAttribLocation(program, "aVertexPosition");
         gl.enableVertexAttribArray(program.aVertexPosition);
@@ -138,9 +138,9 @@ define('cafi/render/webgl', [
 
         // render axis versors
         vertices = new Float32Array([
-            0, 0, 0,   w, 0, 0,   1, 0, 0,
-            0, 0, 0,   0, h, 0,   0, 1, 0,
-            0, 0, 0,   0, 0, d,   0, 0, 1
+            0, 0, 0,   30, 0, 0,   1, 0, 0,
+            0, 0, 0,   0, 30, 0,   0, 1, 0,
+            0, 0, 0,   0, 0, 30,   0, 0, 1
         ]);
          
         vbuffer = gl.createBuffer();
@@ -151,7 +151,7 @@ define('cafi/render/webgl', [
         numItems = vertices.length / itemSize;
          
         program.uColor = gl.getUniformLocation(program, "uColor");
-        gl.uniform4fv(program.uColor, [0, 0, 1, 1]);
+        gl.uniform4fv(program.uColor, [0, 1, 0, 1]);
 
         program.aVertexPosition = gl.getAttribLocation(program, "aVertexPosition");
         gl.enableVertexAttribArray(program.aVertexPosition);
