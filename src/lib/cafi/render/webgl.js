@@ -96,19 +96,51 @@ define('cafi/render/webgl', [
         gl.uniformMatrix4fv(rotationXUniform, false, Array.m4_getRotation(this.rotateX||0, [1, 0, 0]).m4_toFloat32Array());
 
         var scaleUniform = gl.getUniformLocation(program, "uScaleMatrix");
-        gl.uniformMatrix4fv(scaleUniform, false, Array.m4_getScale([this.scale, this.scale, this.scale]).m4_toFloat32Array());
+        gl.uniformMatrix4fv(scaleUniform, false, Array.m4_getScale([
+            this.scale/Cafi.universeWidth, this.scale/Cafi.universeHeight, this.scale/Cafi.universeDepth
+        ]).m4_toFloat32Array());
 
         var perspectiveUniform = gl.getUniformLocation(program, "uPerspectiveMatrix");
         //gl.uniformMatrix4fv(perspectiveUniform, false, Array.m4_getPerspective(45, 1, -2, 2).m4_toFloat32Array());
         gl.uniformMatrix4fv(perspectiveUniform, false, Array.m4_getOrtho(-2, 2, -2, 2, -2, 2).m4_toFloat32Array());
         //gl.uniformMatrix4fv(perspectiveUniform, false, Array.m4_getIdentity().m4_toFloat32Array());
 
+        var vertices, w = Cafi.universeWidth, h = Cafi.universeHeight, d = Cafi.universeDepth;
+
+        // render edges
+        vertices = new Float32Array([
+            0, 0, 0,   w, 0, 0,
+            w, 0, 0,   w, h, 0,
+            w, h, 0,   0, h, 0,
+            0, h, 0,   0, 0, 0,
+
+            0, 0, 0,   w, 0, 0,
+            w, 0, 0,   w, 0, d,
+            w, 0, d,   0, 0, d,
+            0, 0, d,   0, 0, 0
+        ]);
+         
+        vbuffer = gl.createBuffer();
+        gl.bindBuffer(gl.ARRAY_BUFFER, vbuffer);                                       
+        gl.bufferData(gl.ARRAY_BUFFER, vertices, gl.STATIC_DRAW);
+         
+        itemSize = 3;
+        numItems = vertices.length / itemSize;
+         
+        program.uColor = gl.getUniformLocation(program, "uColor");
+        gl.uniform4fv(program.uColor, [0.2, 0, 0.2, 1]);
+
+        program.aVertexPosition = gl.getAttribLocation(program, "aVertexPosition");
+        gl.enableVertexAttribArray(program.aVertexPosition);
+        gl.vertexAttribPointer(program.aVertexPosition, itemSize, gl.FLOAT, false, 0, 0)
+
+        gl.drawArrays(gl.LINES, 0, numItems);
 
         // render axis versors
-        var vertices = new Float32Array([
-            0, 0, 0,   1, 0, 0,   0, 0, 0, 
-            0, 0, 0,   0, 1, 0,   0, 0, 0, 
-            0, 0, 0,   0, 0, 1,   0, 0, 0
+        vertices = new Float32Array([
+            0, 0, 0,   w, 0, 0,   1, 0, 0,
+            0, 0, 0,   0, h, 0,   0, 1, 0,
+            0, 0, 0,   0, 0, d,   0, 0, 1
         ]);
          
         vbuffer = gl.createBuffer();
@@ -124,7 +156,6 @@ define('cafi/render/webgl', [
         program.aVertexPosition = gl.getAttribLocation(program, "aVertexPosition");
         gl.enableVertexAttribArray(program.aVertexPosition);
         gl.vertexAttribPointer(program.aVertexPosition, itemSize, gl.FLOAT, false, 0, 0)
-
 
         gl.drawArrays(gl.LINES, 0, numItems);
 
@@ -162,16 +193,13 @@ define('cafi/render/webgl', [
         var gl = this.gl,
             aspect = this.aspect,
             program = this.program,
-            p = model.position.v3_dotProduct(aspect),
+            p = model.position,
             r = model.direction.v3_dotProduct(aspect*30),
-            w = Cafi.universeWidth,
-            h = Cafi.universeWidth,
-            d = Cafi.universeWidth,
             vertices = new Float32Array([
-                p[0]/w, p[1]/h, p[2]/d,
-                (p[0]+r[0])/w, (p[1]+r[1])/h, (p[2]+r[2])/d
+                p[0], p[1], p[2],
+                (p[0]+r[0]), (p[1]+r[1]), (p[2]+r[2])
             ]);
-         
+
         vbuffer = gl.createBuffer();
         gl.bindBuffer(gl.ARRAY_BUFFER, vbuffer);                                       
         gl.bufferData(gl.ARRAY_BUFFER, vertices, gl.STATIC_DRAW);
