@@ -2,6 +2,10 @@ body {
     background: black;
 }
 
+div {
+    box-sizing: border-box;
+}
+
 
 #webgl-canvas-container {
     position: absolute;

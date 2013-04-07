@@ -82,6 +82,39 @@ define('cafi/m4', ['cafi/v3'], function (V3) {
         ];
     };
 
+    Array.m4_getLookAt = function (eye, center, up) {
+        var z = eye.v3_substract(center).v3_getVersor(),
+            x = up.v3_product(z).v3_getVersor(),
+            y = z.v3_product(x).v3_getVersor(),
+            m = [
+                x[0], y[0], z[0], 0,
+                x[1], y[1], z[1], 0,
+                x[2], y[2], z[2], 0,
+                0,    0,    0,    1
+            ];
+        return m.m4_product(Array.m4_getTranslation(eye));
+    };
+
+    Array.prototype.m4_product = function (b) {
+        var a = this, i, j, p = [];
+        for (i = 0; i < 16; i+=4) {
+            for (j = 0; j < 4; j++) {
+                p.push(a[i]*b[j] + a[i+1]*b[j+4] + a[i+2]*b[j+8] + a[i+3]*b[j+12]);
+            }
+        }
+        return p;
+    };
+
+    Array.prototype.m4_transpose = function () {
+        var a = this;
+        return [
+            a[0], a[4], a[8],  a[12],
+            a[1], a[5], a[9],  a[13],
+            a[2], a[6], a[10], a[14],
+            a[3], a[7], a[11], a[15]
+        ];
+    };
+
     return Array;
 
 });
