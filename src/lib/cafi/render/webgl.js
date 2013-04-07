@@ -100,10 +100,12 @@ define('cafi/render/webgl', [
             this.scale/Cafi.universeWidth, this.scale/Cafi.universeHeight, this.scale/Cafi.universeDepth
         ]).m4_toFloat32Array());
 
+        var sqrt2 = Math.sqrt(2);
+
         var perspectiveUniform = gl.getUniformLocation(program, "uPerspectiveMatrix");
         //gl.uniformMatrix4fv(perspectiveUniform, false, Array.m4_getPerspective(45, 1, -2, 2).m4_toFloat32Array());
-        gl.uniformMatrix4fv(perspectiveUniform, false, Array.m4_getOrtho(-2, 2, -2, 2, -2, 2).m4_toFloat32Array());
         //gl.uniformMatrix4fv(perspectiveUniform, false, Array.m4_getIdentity().m4_toFloat32Array());
+        gl.uniformMatrix4fv(perspectiveUniform, false, Array.m4_getOrtho(-sqrt2, sqrt2, -sqrt2, sqrt2, -sqrt2, sqrt2).m4_toFloat32Array());
 
         var vertices, w = Cafi.universeWidth, h = Cafi.universeHeight, d = Cafi.universeDepth;
 
@@ -128,7 +130,7 @@ define('cafi/render/webgl', [
         numItems = vertices.length / itemSize;
          
         program.uColor = gl.getUniformLocation(program, "uColor");
-        gl.uniform4fv(program.uColor, [0.2, 0, 0.2, 1]);
+        gl.uniform4fv(program.uColor, [0, 0, 0.3, 1]);
 
         program.aVertexPosition = gl.getAttribLocation(program, "aVertexPosition");
         gl.enableVertexAttribArray(program.aVertexPosition);
@@ -138,9 +140,9 @@ define('cafi/render/webgl', [
 
         // render axis versors
         vertices = new Float32Array([
-            0, 0, 0,   w, 0, 0,   1, 0, 0,
-            0, 0, 0,   0, h, 0,   0, 1, 0,
-            0, 0, 0,   0, 0, d,   0, 0, 1
+            0, 0, 0,   30, 0, 0,   1, 0, 0,
+            0, 0, 0,   0, 30, 0,   0, 1, 0,
+            0, 0, 0,   0, 0, 30,   0, 0, 1
         ]);
          
         vbuffer = gl.createBuffer();
@@ -151,11 +153,12 @@ define('cafi/render/webgl', [
         numItems = vertices.length / itemSize;
          
         program.uColor = gl.getUniformLocation(program, "uColor");
-        gl.uniform4fv(program.uColor, [0, 0, 1, 1]);
+        gl.uniform4fv(program.uColor, [0, 1, 0, 1]);
 
         program.aVertexPosition = gl.getAttribLocation(program, "aVertexPosition");
         gl.enableVertexAttribArray(program.aVertexPosition);
         gl.vertexAttribPointer(program.aVertexPosition, itemSize, gl.FLOAT, false, 0, 0)
+
 
         gl.drawArrays(gl.LINES, 0, numItems);
 

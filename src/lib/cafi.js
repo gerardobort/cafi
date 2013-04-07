@@ -18,7 +18,7 @@ define('cafi', [], function () {
         pq: 1.6E-19,
         enableTransitions: true,
         collisionThreshold: 7,
-        timeBreakPoint: 5*60*1000,
+        timeBreakPoint: 60*60*1000,
         timeScale: 0.003,
         models: [],
         renders: [], // composite array
