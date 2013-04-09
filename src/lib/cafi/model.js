@@ -121,6 +121,10 @@ define('cafi/model', ['cafi', 'cafi/v3'], function (Cafi, V3) {
         throw "No render engine initialized, try loading html5 or canvas Cafi modules.";
     };
 
+    Cafi.Model.prototype.setBounding = function (bounding) {
+        this.bounding = bounding;
+    };
+
     return Cafi.Model;
 
 });

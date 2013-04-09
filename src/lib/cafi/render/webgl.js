@@ -100,6 +100,9 @@ define('cafi/render/webgl', [
             this.scale/Cafi.universeWidth, this.scale/Cafi.universeHeight, this.scale/Cafi.universeDepth
         ]).m4_toFloat32Array());
 
+        var modelTransform = gl.getUniformLocation(program, "uModelTransformMatrix");
+        gl.uniformMatrix4fv(modelTransform, false, Array.m4_getIdentity().m4_toFloat32Array());
+
         var sqrt2 = Math.sqrt(2);
 
         var perspectiveUniform = gl.getUniformLocation(program, "uPerspectiveMatrix");
@@ -226,9 +229,72 @@ define('cafi/render/webgl', [
         gl.enableVertexAttribArray(program.aVertexPosition);
         gl.vertexAttribPointer(program.aVertexPosition, itemSize, gl.FLOAT, false, 0, 0)
 
+        var modelTransform = gl.getUniformLocation(program, "uModelTransformMatrix");
+        gl.uniformMatrix4fv(modelTransform, false, Array.m4_getIdentity().m4_toFloat32Array());
+
         gl.drawArrays(gl.LINES, 0, numItems);
 
+
+        /* render bounding box TODO moveme */
+        if (model.bounding && 'box' === model.bounding.getType()) {
+            this.renderBoundingBox(model.bounding);
+        }
+
     };
+
+    Cafi.Render.WebGL.prototype.renderBoundingBox = function (bounding) {
+        var gl = this.gl,
+            aspect = this.aspect,
+            program = this.program,
+            model = bounding.model,
+            p = model.position,
+            w = bounding.width/2,
+            h = bounding.height/2,
+            d = bounding.depth/2,
+            vertices = new Float32Array([
+                -w, -h, -d,   +w, -h, -d,
+                +w, -h, -d,   +w, +h, -d,
+                +w, +h, -d,   -w, +h, -d,
+                -w, +h, -d,   -w, -h, -d,
+
+                -w, -h, +d,   +w, -h, +d,
+                +w, -h, +d,   +w, +h, +d,
+                +w, +h, +d,   -w, +h, +d,
+                -w, +h, +d,   -w, -h, +d,
+
+                -w, -h, -d,   -w, -h, +d,
+                +w, -h, -d,   +w, -h, +d,
+                -w, +h, -d,   -w, +h, +d,
+                +w, +h, -d,   +w, +h, +d,
+            ]);
+
+        vbuffer = gl.createBuffer();
+        gl.bindBuffer(gl.ARRAY_BUFFER, vbuffer);
+        gl.bufferData(gl.ARRAY_BUFFER, vertices, gl.STATIC_DRAW);
+         
+        itemSize = 3;
+        numItems = vertices.length / itemSize;
+
+        gl.useProgram(program);
+         
+        program.uColor = gl.getUniformLocation(program, "uColor");
+        gl.uniform4fv(program.uColor, [0, 1, 1, 1]);
+         
+        program.aVertexPosition = gl.getAttribLocation(program, "aVertexPosition");
+        gl.enableVertexAttribArray(program.aVertexPosition);
+        gl.vertexAttribPointer(program.aVertexPosition, itemSize, gl.FLOAT, false, 0, 0)
+
+        var modelTransform = gl.getUniformLocation(program, "uModelTransformMatrix");
+        gl.uniformMatrix4fv(modelTransform, false,  
+            Array
+                .m4_getRotation(90, model.direction.v3_product([0,0,1]))
+                .m4_product(Array.m4_getTranslation(p))
+                .m4_toFloat32Array()
+        );
+
+        gl.drawArrays(gl.LINES, 0, numItems);
+        
+    }
 
     return Cafi.Render.WebGL;
 

@@ -10,8 +10,8 @@ require.config({
 });
 
 require([
-    'cafi', 'cafi/model', 'cafi/render/html5', 'cafi/render/webgl'
-    ], function (Cafi, CafiModel, CafiHTML5Render, CafiWebGLRender) {
+    'cafi', 'cafi/model', 'cafi/bounding/box', 'cafi/render/html5', 'cafi/render/webgl'
+    ], function (Cafi, CafiModel, CafiBoundingBox, CafiHTML5Render, CafiWebGLRender) {
 
 
     Cafi.start();
@@ -42,6 +42,8 @@ require([
         name: '1'
     });
 
+    var e1_b = new Cafi.Bounding.Box({ model: e1, width: 30, height: 30, depth: 80 });
+
     var b2 = new Cafi.Model({
         mass: 10,
         position: [750, 500, 200],
@@ -57,7 +59,7 @@ require([
         e.preventDefault();
     };
     document.onmousedown = function (e) {
-        if (2 === e.button) {
+        if (0 === e.button) {
             moving = true;
         }
     };
@@ -77,7 +79,7 @@ require([
         yi = e.clientY;
     };
     document.onclick = function (e) {
-        if (0 === e.button) {
+        if (2 === e.button) {
             new Cafi.Model({
                 mass: 1,
                 charge: 1E-2 * (i++%2 ? 1 : -1),
