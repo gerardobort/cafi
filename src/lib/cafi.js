@@ -25,30 +25,54 @@ define('cafi', [], function () {
         colisionMatrix: [], // upper triangular matrix
         tiemr: null,
         octree: [], // multidimentional octree
-        octreeMaxDepth: 4,
+        octreeMaxDepth: 0,
         universeWidth: window.screen.width,
         universeHeight: window.screen.height,
         universeDepth: window.screen.height,
         mainLoop: function () {
             var i, j, iModel, jModel, Cafi__models = Cafi.models, Cafi__collisionMatrix = Cafi.colisionMatrix;
 
-            Cafi.resetOctree();
-            for (i = (Cafi__models || []).length-1; i > -1; --i) {
-                iModel = Cafi__models[i];
-                iModel.process();
-                Cafi.setModelInOctree(iModel);
-            }
-
-            // @TODO traverse the Cafi.octree rather than the Cafi_models
-            for (i = (Cafi__models || []).length-1; i > -1; --i) {
-                iModel = Cafi__models[i];
-                for (j = (Cafi__models || []).length-1; i < j; --j) {
-                    jModel = Cafi__models[j];
-                    if (iModel.position.v3_getDistance(jModel.position) < Cafi.collisionThreshold) {
-                        Cafi.processModelsCollision(i, j);
+            //console.clear();
+            var s = 0;
+            if (Cafi.octreeMaxDepth === 0) {           
+                // walk through the plain upper triangular matrix
+                for (i = (Cafi__models || []).length-1; i > -1; --i) {
+                    iModel = Cafi__models[i];
+                    iModel.process();
+                }
+                for (i = (Cafi__models || []).length-1; i > -1; --i) {
+                    iModel = Cafi__models[i];
+                    for (j = (Cafi__models || []).length-1; i < j; --j) {
+                        jModel = Cafi__models[j];
+                        s++;
+                        if (iModel.position.v3_getDistance(jModel.position) < Cafi.collisionThreshold) {
+                            Cafi.processModelsCollision(i, j);
+                        }
+                    }
+                }
+            } else {
+                // walk inside the octree
+                Cafi.resetOctree();
+                for (i = (Cafi__models || []).length-1; i > -1; --i) {
+                    iModel = Cafi__models[i];
+                    iModel.process();
+                    Cafi.setModelInOctree(iModel);
+                }
+                var octree = Cafi.octree;
+                for (i = (Cafi__models || []).length-1; i > -1; --i) {
+                    iModel = Cafi__models[i];
+                    octree = iModel._Cafi_currentOctree;
+                    for (j = (octree || []).length-1; j > -1; --j) {
+                        jModel = octree[j];
+                        s++;
+                        if (iModel === jModel) { continue; }
+                        if (iModel.position.v3_getDistance(jModel.position) < Cafi.collisionThreshold) {
+                            Cafi.processModelsCollision(i, j);
+                        }
                     }
                 }
             }
+            //console.log('octreeMaxDepth', Cafi.octreeMaxDepth, 'models', Cafi.models.length, 'loop count ', s);
 
             Cafi.renders.cleanCanvas();
             for (i = (Cafi__models || []).length-1; i > -1; --i) {
@@ -127,33 +151,36 @@ define('cafi', [], function () {
                 parentOctree = Cafi.octree, currentOctree, octreeDepth, octreeMaxDepth = Cafi.octreeMaxDepth, divisor;
                 width = Cafi.universeWidth, height = Cafi.universeHeight, depth = Cafi.universeDepth;
 
-            for (octreeDepth = 1; octreeDepth < octreeMaxDepth; ++octreeDepth) {
-                /*
-                 * binary space cut:
-                 * x(0): left=0 - right=1
-                 * y(1): bottom=0 - top=1
-                 * z(2): back=0 - front=1
-                 */
-                binaryPosition = parseInt('0' 
-                    + (p[2] > (depth=depth/2) ? 1 : 0)
-                    + (p[1] > (height=height/2) ? 1 : 0)
-                    + (p[0] > (width=width/2) ? 1 : 0), 2);
+            for (octreeDepth = 0; octreeDepth <= octreeMaxDepth; ++octreeDepth) {
 
-                if (octreeDepth === octreeMaxDepth-1) {
-                    if ('array' === typeof currentOctree[binaryPosition]) {
-                        currentOctree[binaryPosition].push(model);
+                if (octreeDepth === octreeMaxDepth) {
+                    if ('object' === typeof currentOctree) {
+                        currentOctree.push(model);
                     } else {
-                        currentOctree[binaryPosition] = [model];
+                        currentOctree = [model];
                     }
-                } else {
-                    parentOctree = currentOctree || parentOctree;
-                    currentOctree = []; // new octree depth
                     parentOctree[binaryPosition] = currentOctree;
+                    modelOctreePath.push(currentOctree.length-1);
+                } else {
+                    /*
+                     * binary space cut:
+                     * x(0): left=0 - right=1
+                     * y(1): bottom=0 - top=1
+                     * z(2): back=0 - front=1
+                     */
+                    binaryPosition = parseInt('0' 
+                        + (p[2] > (depth=depth/2) ? 1 : 0)
+                        + (p[1] > (height=height/2) ? 1 : 0)
+                        + (p[0] > (width=width/2) ? 1 : 0), 2);
+
+                    parentOctree = currentOctree || parentOctree;
+                    currentOctree = parentOctree[binaryPosition] || []; // new octree depth
+                    parentOctree[binaryPosition] = currentOctree;
+                    modelOctreePath.push(binaryPosition);
                 }
-                modelOctreePath.push(binaryPosition);
             }
-            model._Cafi_octreePath = modelOctreePath;
             model._Cafi_currentOctree = currentOctree;
+            model._Cafi_octreePath = modelOctreePath;
         },
         getNearModelsInOctree: function (model) {
             return model._Cafi_currentOctree;

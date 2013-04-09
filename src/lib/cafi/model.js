@@ -35,7 +35,7 @@ define('cafi/model', ['cafi', 'cafi/v3'], function (Cafi, V3) {
      */
     Cafi.Model.prototype.getResultantForce = function () {
         var resultantForce = [0, 0, 0],
-            Cafi__models = Cafi.models,
+            Cafi__models = this._Cafi_currentOctree || Cafi.models,
             G = Cafi.G,
             K = Cafi.K,
             modelA = this, modelB, m = this.mass, q = this.charge, dg, de, rg, re, R,
