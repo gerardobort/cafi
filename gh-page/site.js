@@ -42,7 +42,7 @@ require([
         name: '1'
     });
 
-    var e1_b = new Cafi.Bounding.Box({ model: e1, width: 30, height: 30, depth: 80 });
+    var e1_b = new Cafi.Bounding.Box({ model: e1, width: 30, height: 80, depth: 30 });
 
     var b2 = new Cafi.Model({
         mass: 10,
