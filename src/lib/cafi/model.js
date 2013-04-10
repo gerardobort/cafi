@@ -26,6 +26,9 @@ define('cafi/model', ['cafi', 'cafi/v3'], function (Cafi, V3) {
         // register model
         Cafi.models.push(this);
 
+        // default bounding
+        new Cafi.Bounding.Box({ model: this, width: 30, height: 30, depth: 30 });
+
         Cafi.renders.initializeModel(this);
     };
 

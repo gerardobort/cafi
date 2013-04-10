@@ -287,7 +287,7 @@ define('cafi/render/webgl', [
         var modelTransform = gl.getUniformLocation(program, "uModelTransformMatrix");
         gl.uniformMatrix4fv(modelTransform, false,  
             Array
-                .m4_getRotation(90, model.direction.v3_product([0,0,1]))
+                .m4_getRotation(model.direction.v3_getAngleXZ()-90, model.direction.v3_product([0,1,0]))
                 .m4_product(Array.m4_getTranslation(p))
                 .m4_toFloat32Array()
         );
