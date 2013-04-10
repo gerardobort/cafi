@@ -16,6 +16,7 @@ define('cafi/model', ['cafi', 'cafi/v3'], function (Cafi, V3) {
         this.position = options.position || [0, 0, 0];
         this.direction = options.position || [0, 0, 0];
         this.charge = options.charge || 0;
+        this.orientation = options.orientation || null;
 
         // Endo Vars
         this.acceleration = options.acceleration || [0, 0, 0];
