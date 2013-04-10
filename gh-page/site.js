@@ -19,6 +19,15 @@ require([
     new Cafi.Render.HTML5({ containerId: 'html5-canvas-container', scale: 0.5 });
     new Cafi.Render.WebGL({ containerId: 'webgl-canvas-container', scale: 1 });
 
+    var ramp = new Cafi.Model({
+        mass: 10000, 
+        position: [300, 300, 200],
+        velocity: [0, 0, 0],
+        name: '1',
+        orientation: [0,1,0]
+    });
+    var ramp_b = new Cafi.Bounding.Box({ model: ramp, width: 600, height: 2, depth: 600 });
+
     var e1 = new Cafi.Model({
         mass: 1, 
         charge: 2E-2,
@@ -42,8 +51,6 @@ require([
         name: '1'
     });
 
-    var e1_b = new Cafi.Bounding.Box({ model: e1, width: 30, height: 80, depth: 30 });
-
     var b2 = new Cafi.Model({
         mass: 10,
         position: [750, 500, 200],
@@ -62,6 +69,15 @@ require([
         if (0 === e.button) {
             moving = true;
         }
+        if (2 === e.button) {
+            new Cafi.Model({
+                mass: 1,
+                charge: 1E-2 * (i++%2 ? 1 : -1),
+                position: [e.clientX, e.clientY, 400],
+                velocity: [parseInt(Math.random()*50*(e.clientX > window.innerWidth/2 ? -1 : 1), 10), parseInt(Math.random()*100, 10), -20],
+                name: ''
+            });
+        }
     };
     document.onmouseup = function (e) {
         moving = false;
@@ -77,17 +93,6 @@ require([
         }
         xi = e.clientX;
         yi = e.clientY;
-    };
-    document.onclick = function (e) {
-        if (2 === e.button) {
-            new Cafi.Model({
-                mass: 1,
-                charge: 1E-2 * (i++%2 ? 1 : -1),
-                position: [e.clientX, e.clientY, 400],
-                velocity: [parseInt(Math.random()*50*(e.clientX > window.innerWidth/2 ? -1 : 1), 10), parseInt(Math.random()*100, 10), -20],
-                name: ''
-            });
-        }
     };
 
 });

@@ -285,12 +285,21 @@ define('cafi/render/webgl', [
         gl.vertexAttribPointer(program.aVertexPosition, itemSize, gl.FLOAT, false, 0, 0)
 
         var modelTransform = gl.getUniformLocation(program, "uModelTransformMatrix");
+        if (model.orientation) {
+            var axis = model.orientation.v3_product([0,1,0]),
+                angle = model.orientation.v3_getAngleXZ()-90;
+        } else {
+            var axis = model.direction.v3_product([0,1,0]),
+                angle = model.direction.v3_getAngleXZ()-90;
+        }
+        axis = axis.v3_getModule() ? axis : [0, 1, 0];
         gl.uniformMatrix4fv(modelTransform, false,  
             Array
-                .m4_getRotation(model.direction.v3_getAngleXZ()-90, model.direction.v3_product([0,1,0]))
+                .m4_getRotation(angle, axis)
                 .m4_product(Array.m4_getTranslation(p))
                 .m4_toFloat32Array()
         );
+
 
         gl.drawArrays(gl.LINES, 0, numItems);
         

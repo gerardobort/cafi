@@ -45,9 +45,9 @@ define('cafi', [], function () {
                     for (j = (Cafi__models || []).length-1; i < j; --j) {
                         jModel = Cafi__models[j];
                         s++;
-                        if (iModel.position.v3_getDistance(jModel.position) < Cafi.collisionThreshold) {
+                        //if (iModel.position.v3_getDistance(jModel.position) < Cafi.collisionThreshold) {
                             Cafi.processModelsCollision(i, j);
-                        }
+                        //}
                     }
                 }
             } else {
@@ -66,9 +66,9 @@ define('cafi', [], function () {
                         jModel = octree[j];
                         s++;
                         if (iModel === jModel) { continue; }
-                        if (iModel.position.v3_getDistance(jModel.position) < Cafi.collisionThreshold) {
+                        //if (iModel.position.v3_getDistance(jModel.position) < Cafi.collisionThreshold) {
                             Cafi.processModelsCollision(i, j);
-                        }
+                        //}
                     }
                 }
             }
@@ -116,6 +116,10 @@ define('cafi', [], function () {
         processModelsCollision: function (i, j) {
             var modelA = this.models[i],
                 modelB = this.models[j];
+
+            if (!modelA.bounding.testCollision(modelB.bounding)) {
+                return;
+            }
 
             // plastic collision
             // modelA.velocity = modelB.direction.v3_dotProduct(modelA.velocity.v3_getModule());
